@@ -763,7 +763,7 @@ class TransactionAlertResponse(BaseModel):
     Safe investigative alert summary referencing a transaction.
     """
 
-    model_config = ConfigDict(from_attributes=False)
+    model_config = ConfigDict(from_attributes=False, populate_by_name=True)
 
     id: str
     account_id: str
@@ -775,7 +775,7 @@ class TransactionAlertResponse(BaseModel):
     score: Optional[Decimal] = None
     score_version: Optional[str] = None
     scoring_mode: str
-    model_version: Optional[str] = None
+    version_label: Optional[str] = Field(default=None, alias="model_version")
     rule_codes: list[str] = Field(default_factory=list)
     signal_summary_json: Optional[Any] = None
     first_seen_at: datetime
