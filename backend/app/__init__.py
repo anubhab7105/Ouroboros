@@ -23,7 +23,6 @@ Product safety reminders:
 
 from __future__ import annotations
 
-import sys
 from collections.abc import Mapping
 from importlib import import_module
 from types import MappingProxyType
@@ -41,12 +40,6 @@ if __package__ in {None, ""}:
         "uvicorn app.main:app"
     )
 
-if sys.version_info < (3, 11):
-    raise RuntimeError(
-        "MULEGUARD backend requires Python 3.11 or newer. "
-        f"Current Python version: {sys.version.split()[0]}"
-    )
-
 
 # -----------------------------------------------------------------------------
 # Stable package metadata
@@ -57,8 +50,7 @@ __version_info__: Final[tuple[int, int, int, str]] = (0, 1, 0, "alpha")
 
 APP_NAME: Final[str] = "MULEGUARD Backend"
 APP_DESCRIPTION: Final[str] = (
-    "Synthetic-first mule account detection and financial fraud "
-    "investigation prototype backend"
+    "Synthetic-first mule account detection and financial fraud investigation prototype backend"
 )
 API_PREFIX: Final[str] = "/api/v1"
 DATA_CLASSIFICATION: Final[str] = "synthetic"
@@ -160,36 +152,36 @@ NON_GOALS: Final[tuple[str, ...]] = (
 # heavyweight module loading.
 
 __all__: Final[tuple[str, ...]] = (
-    "APP_NAME",
-    "APP_DESCRIPTION",
     "API_PREFIX",
-    "DATA_CLASSIFICATION",
-    "LICENSE",
+    "APP_DESCRIPTION",
+    "APP_NAME",
+    "AUDIT_BYPASS_ALLOWED",
     "AUTHOR",
-    "COPYRIGHT",
-    "PYTHON_REQUIRES",
-    "SYNTHETIC_FIRST",
-    "PRODUCTION_READY",
     "AUTOMATIC_ADVERSE_ACTION_ALLOWED",
-    "REAL_CUSTOMER_DATA_ALLOWED",
-    "MODEL_PROBABILITY_CLAIM_ALLOWED",
     "CALIBRATION_CLAIM_ALLOWED",
-    "GRAPH_UNBOUNDED_QUERY_ALLOWED",
-    "USER_UPLOADED_MODEL_DESERIALIZATION_ALLOWED",
+    "COPYRIGHT",
+    "DATA_CLASSIFICATION",
     "FAKE_FUNCTIONALITY_ALLOWED",
+    "FUTURE_INFORMATION_IN_FEATURES_ALLOWED",
+    "GRAPH_UNBOUNDED_QUERY_ALLOWED",
     "HARDCODED_METRICS_ALLOWED",
     "LABEL_LEAKAGE_ALLOWED",
-    "FUTURE_INFORMATION_IN_FEATURES_ALLOWED",
-    "AUDIT_BYPASS_ALLOWED",
-    "SECRET_IN_SOURCE_CONTROL_ALLOWED",
-    "SAFETY_FLAGS",
-    "PRODUCT_PRINCIPLES",
+    "LICENSE",
+    "MODEL_PROBABILITY_CLAIM_ALLOWED",
     "NON_GOALS",
+    "PRODUCTION_READY",
+    "PRODUCT_PRINCIPLES",
+    "PYTHON_REQUIRES",
+    "REAL_CUSTOMER_DATA_ALLOWED",
+    "SAFETY_FLAGS",
+    "SECRET_IN_SOURCE_CONTROL_ALLOWED",
+    "SYNTHETIC_FIRST",
+    "USER_UPLOADED_MODEL_DESERIALIZATION_ALLOWED",
     "__version__",
     "__version_info__",
+    "assert_package_policy",
     "get_app_metadata",
     "validate_package_policy",
-    "assert_package_policy",
 )
 
 
@@ -240,9 +232,7 @@ def __getattr__(name: str) -> Any:
     module_name = _LAZY_MODULES.get(name)
 
     if module_name is None:
-        raise AttributeError(
-            f"module {__name__!r} has no attribute {name!r}"
-        )
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
     module = import_module(module_name, __name__)
     globals()[name] = module
@@ -265,6 +255,7 @@ def __dir__() -> list[str]:
 # Policy validation helpers
 # -----------------------------------------------------------------------------
 
+
 def validate_package_policy() -> tuple[str, ...]:
     """
     Return a tuple of policy violations detected from package-level constants.
@@ -275,9 +266,7 @@ def validate_package_policy() -> tuple[str, ...]:
     violations: list[str] = []
 
     if PRODUCTION_READY:
-        violations.append(
-            "PRODUCTION_READY must be False for the MULEGUARD prototype."
-        )
+        violations.append("PRODUCTION_READY must be False for the MULEGUARD prototype.")
 
     if AUTOMATIC_ADVERSE_ACTION_ALLOWED:
         violations.append(
@@ -288,8 +277,7 @@ def validate_package_policy() -> tuple[str, ...]:
 
     if REAL_CUSTOMER_DATA_ALLOWED:
         violations.append(
-            "REAL_CUSTOMER_DATA_ALLOWED must be False by default. "
-            "MULEGUARD is synthetic-first."
+            "REAL_CUSTOMER_DATA_ALLOWED must be False by default. MULEGUARD is synthetic-first."
         )
 
     if MODEL_PROBABILITY_CLAIM_ALLOWED:
