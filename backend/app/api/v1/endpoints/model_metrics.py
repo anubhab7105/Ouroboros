@@ -7,15 +7,15 @@ evaluations.
 
 Implemented endpoints:
 
-- GET /api/v1/model-metrics/status
-- GET /api/v1/model-metrics/current
-- GET /api/v1/model-metrics/limitations
-- GET /api/v1/model-metrics/feature-schema
-- GET /api/v1/model-metrics/versions
-- GET /api/v1/model-metrics/versions/{version_id}
-- GET /api/v1/model-metrics/versions/{version_id}/evaluations
-- GET /api/v1/model-metrics/evaluations/{evaluation_id}
-- GET /api/v1/model-metrics/compare
+- GET /api/v1/model/status
+- GET /api/v1/model/current
+- GET /api/v1/model/limitations
+- GET /api/v1/model/feature-schema
+- GET /api/v1/model/versions
+- GET /api/v1/model/versions/{version_id}
+- GET /api/v1/model/versions/{version_id}/evaluations
+- GET /api/v1/model/evaluations/{evaluation_id}
+- GET /api/v1/model/compare
 
 Design goals:
 
