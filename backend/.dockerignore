@@ -393,6 +393,9 @@ wiki/
 *.rst
 *.adoc
 *.txt
+!requirements.txt
+!requirements-dev.txt
+!requirements*.txt
 !app/ml/artifacts/README.md
 !app/ml/artifacts/model_manifest.example.json
 !README.md.example
