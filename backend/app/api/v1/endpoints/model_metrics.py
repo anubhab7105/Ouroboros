@@ -1065,7 +1065,7 @@ class ModelVersionResponse(BaseModel):
     id: str
     version: str
     feature_schema_version: str
-    model_family: str = Field(alias="model_type")
+    family: str = Field(alias="model_type")
     training_seed: Optional[int] = None
     training_started_at: Optional[datetime] = None
     training_finished_at: Optional[datetime] = None
