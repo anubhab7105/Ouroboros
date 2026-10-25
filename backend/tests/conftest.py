@@ -72,6 +72,9 @@ _TEST_ENV: dict[str, str] = {
 for _key, _value in _TEST_ENV.items():
     os.environ.setdefault(_key, _value)
 
+# The router registry is evaluated at import time; keep model monitoring mounted in tests.
+os.environ["ML_ENABLED"] = "true"
+
 # `setdefault` leaves an inherited value in place, which is right for most
 # settings but wrong for the database: a DATABASE_URL in the developer's shell
 # would point the suite at a real database. This one is forced.
