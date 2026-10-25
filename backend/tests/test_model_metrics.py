@@ -28,12 +28,12 @@ from __future__ import annotations
 
 import pytest
 
-from app.models import ModelType, SplitStrategy
 from app.api.v1.endpoints.model_metrics import (
     FeatureSchemaResponse,
     ModelEvaluationResponse,
     ModelVersionResponse as EndpointModelVersionResponse,
 )
+from app.models import ModelType, SplitStrategy
 from app.schemas.model_metrics import ModelVersionResponse as SharedModelVersionResponse
 
 from tests.utils import assert_error, assert_ok, assert_paginated, ids_of
