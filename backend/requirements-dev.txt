@@ -131,7 +131,7 @@ ruff>=0.6,<1.0
 # 5. Static type checking
 # -----------------------------------------------------------------------------
 # Mypy is the primary static type checker for the backend.
-mypy>=1.11,<2.0
+mypy>=1.11,<3.0
 
 # Type stubs: NOT installed by default, and deliberately so.
 #
