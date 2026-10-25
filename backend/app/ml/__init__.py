@@ -68,7 +68,7 @@ import importlib
 import math
 import sys
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import Any, Final, Optional
 
@@ -1130,7 +1130,9 @@ class MLPolicy:
     default_feature_window: str = FEATURE_WINDOW_30D
     allowed_feature_windows: tuple[str, ...] = FEATURE_WINDOWS
     metrics: tuple[str, ...] = DEFAULT_METRICS
-    thresholds: Mapping[str, float] = DEFAULT_RISK_THRESHOLDS
+    thresholds: Mapping[str, float] = field(
+        default_factory=lambda: dict(DEFAULT_RISK_THRESHOLDS)
+    )
 
     max_features: int = DEFAULT_MAX_FEATURES
     max_batch_size: int = DEFAULT_MAX_BATCH_SIZE
