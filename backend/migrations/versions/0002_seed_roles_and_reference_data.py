@@ -83,10 +83,21 @@ def upgrade() -> None:
     """
     Insert the baseline scoring-mode rows if they are not already present.
     """
+    bind = op.get_bind()
+
+    # Alembic's default `alembic_version.version_num` column is VARCHAR(32),
+    # which is too narrow for some revision ids (and any future longer ones).
+    # Widen it before recording this revision so the upgrade itself can succeed.
+    if bind.dialect.name != "sqlite":
+        op.alter_column(
+            "alembic_version",
+            "version_num",
+            type_=sa.String(128),
+            existing_type=sa.String(32),
+        )
+
     now = datetime.now(timezone.utc)
     table = _model_versions_table()
-
-    bind = op.get_bind()
     existing = set(
         bind.execute(
             sa.text(
