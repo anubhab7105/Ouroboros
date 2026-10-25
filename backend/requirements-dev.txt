@@ -94,6 +94,9 @@ pytest-timeout>=2.3,<3.0
 # HTTP client used by FastAPI TestClient and API contract tests.
 httpx>=0.27,<1.0
 
+# Starlette's current TestClient uses httpx2; install it to avoid the deprecated httpx fallback.
+httpx2>=2.0,<3.0
+
 
 # =============================================================================
 # 3. Temporal, filesystem, and property-based correctness testing
