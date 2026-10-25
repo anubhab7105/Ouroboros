@@ -45,9 +45,13 @@ on:
         description: "PR number associated with a reconciled CI run"
         required: false
         type: string
+      base_ref:
+        description: "PR base branch for dependency review during reconciliation"
+        required: false
+        type: string
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || inputs.checkout_ref || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || inputs.pull_request_number || inputs.checkout_ref || github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -579,7 +583,7 @@ jobs:
         with:
           fail-on-severity: moderate
           deny-licenses: GPL-3.0, AGPL-3.0
-          base-ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.event.repository.default_branch }}
+          base-ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || inputs.base_ref || github.event.repository.default_branch }}
           head-ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || inputs.checkout_ref }}
           comment-summary-in-pr: ${{ github.event_name == 'pull_request' && 'always' || 'never' }}
 
@@ -613,11 +617,12 @@ jobs:
             const prNumber = "${{ inputs.pull_request_number }}";
             const label = prNumber ? `PR #${prNumber}` : "the target commit";
             const description = `Full CI ${state === "success" ? "passed" : "failed"} for ${label}.`;
+            const contextName = prNumber ? `MULEGUARD CI (reconciled PR #${prNumber})` : "MULEGUARD CI (reconciled)";
             await github.rest.repos.createCommitStatus({
               owner: context.repo.owner,
               repo: context.repo.repo,
               sha: targetSha,
               state,
-              context: "MULEGUARD CI (reconciled)",
+              context: contextName,
               description
             });
