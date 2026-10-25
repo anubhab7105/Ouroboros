@@ -552,7 +552,11 @@ def test_assign_reports_both_assignees(senior_client, make, db, users):
 
 
 def test_assigning_to_the_same_person_reports_no_change(senior_client, make, db, users):
-    case = make.case(status=CaseStatus.TRIAGED, assignee=users["analyst"], creator=users["senior"])
+    case = make.case(
+        status=CaseStatus.TRIAGED,
+        assignee=users["analyst"],
+        creator=users["senior"],
+    )
     db.commit()
 
     body = assert_ok(
