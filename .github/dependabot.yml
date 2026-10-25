@@ -49,15 +49,7 @@ updates:
     rebase-strategy: "auto"
     versioning-strategy: "auto"
 
-    reviewers:
-      - "your-org/backend-team"
-      - "your-org/security-team"
 
-    labels:
-      - "dependencies"
-      - "backend"
-      - "python"
-      - "review-required"
 
     commit-message:
       prefix: "build"
@@ -148,16 +140,7 @@ updates:
     rebase-strategy: "auto"
     versioning-strategy: "auto"
 
-    reviewers:
-      - "your-org/frontend-team"
-      - "your-org/security-team"
 
-    labels:
-      - "dependencies"
-      - "frontend"
-      - "javascript"
-      - "typescript"
-      - "review-required"
 
     commit-message:
       prefix: "build"
@@ -239,15 +222,7 @@ updates:
     open-pull-requests-limit: 5
     rebase-strategy: "auto"
 
-    reviewers:
-      - "your-org/devops-team"
-      - "your-org/security-team"
 
-    labels:
-      - "dependencies"
-      - "ci"
-      - "github-actions"
-      - "security-review"
 
     commit-message:
       prefix: "ci"
@@ -272,16 +247,7 @@ updates:
     open-pull-requests-limit: 5
     rebase-strategy: "auto"
 
-    reviewers:
-      - "your-org/devops-team"
-      - "your-org/backend-team"
-      - "your-org/security-team"
 
-    labels:
-      - "dependencies"
-      - "docker"
-      - "backend"
-      - "security-review"
 
     commit-message:
       prefix: "build"
@@ -305,16 +271,7 @@ updates:
     open-pull-requests-limit: 5
     rebase-strategy: "auto"
 
-    reviewers:
-      - "your-org/devops-team"
-      - "your-org/frontend-team"
-      - "your-org/security-team"
 
-    labels:
-      - "dependencies"
-      - "docker"
-      - "frontend"
-      - "security-review"
 
     commit-message:
       prefix: "build"
