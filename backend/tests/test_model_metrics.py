@@ -29,7 +29,12 @@ from __future__ import annotations
 import pytest
 
 from app.models import ModelType, SplitStrategy
-from app.api.v1.endpoints.model_metrics import FeatureSchemaResponse
+from app.api.v1.endpoints.model_metrics import (
+    FeatureSchemaResponse,
+    ModelEvaluationResponse,
+    ModelVersionResponse as EndpointModelVersionResponse,
+)
+from app.schemas.model_metrics import ModelVersionResponse as SharedModelVersionResponse
 
 from tests.utils import assert_error, assert_ok, assert_paginated, ids_of
 
@@ -177,6 +182,34 @@ def test_the_limitations_summary_says_what_the_labels_are(analyst_client):
 # -----------------------------------------------------------------------------
 # The feature schema
 # -----------------------------------------------------------------------------
+
+
+def test_model_metrics_protected_fields_keep_their_json_aliases():
+    endpoint_version = EndpointModelVersionResponse(
+        id="version-id",
+        version="v1",
+        feature_schema_version="v1",
+        family="RANDOM_FOREST",
+        split_strategy="temporal",
+    )
+    evaluation = ModelEvaluationResponse(
+        id="evaluation-id",
+        version_id="version-id",
+        split_strategy="temporal",
+    )
+    shared_version = SharedModelVersionResponse(
+        id="version-id",
+        version="v1",
+        feature_schema_version="v1",
+        family="RANDOM_FOREST",
+    )
+
+    assert endpoint_version.family == "RANDOM_FOREST"
+    assert endpoint_version.model_dump(by_alias=True)["model_type"] == "RANDOM_FOREST"
+    assert evaluation.version_id == "version-id"
+    assert evaluation.model_dump(by_alias=True)["model_version_id"] == "version-id"
+    assert shared_version.family == "RANDOM_FOREST"
+    assert shared_version.model_dump(by_alias=True)["model_type"] == "RANDOM_FOREST"
 
 
 def test_feature_schema_python_attribute_preserves_json_alias():
