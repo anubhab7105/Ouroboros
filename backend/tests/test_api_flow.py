@@ -122,7 +122,15 @@ class TestPaginationContract:
 
     @pytest.mark.parametrize("path", LIST_ENDPOINTS)
     def test_envelope_is_present_and_flat(self, analyst_client, path):
-        body = assert_paginated(assert_ok(analyst_client.get(path)))
+        response = analyst_client.get(path)
+        if path == f"{API}/model/versions" and response.status_code == 404:
+            from app.api.v1.router import get_api_v1_inclusion_state
+
+            pytest.fail(
+                "Model router is missing; API v1 inclusion state: "
+                f"{get_api_v1_inclusion_state()!r}"
+            )
+        body = assert_paginated(assert_ok(response))
 
         assert "meta" not in body, "pagination is flat, not nested under meta"
         assert isinstance(body["caveats"], list)
