@@ -29,8 +29,12 @@ on:
     branches:
       - "**"
   pull_request:
-    branches:
-      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+      - edited
   workflow_dispatch:
 
 concurrency:
