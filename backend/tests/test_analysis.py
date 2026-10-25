@@ -140,13 +140,18 @@ def test_a_run_records_its_parameters(analyst_client, make, db):
     assert body["parameters_json"]
 
 
-def test_a_run_over_a_filter_rather_than_a_list(analyst_client, make, db):
+def test_a_run_over_a_filter_rather_than_a_list(
+    analyst_client, make, db, override_settings
+):
     """
     Filters are the realistic case: "score the dormant accounts".
 
     Enumerating ids client-side would mean fetching them first, and the set
-    could change between the two calls.
+    could change between the two calls. The all-account selection mode is
+    explicitly enabled here because it is disabled by default for safety.
     """
+    override_settings(ANALYSIS_ALLOW_ALL_ACCOUNTS=True)
+
     from app.models import AccountStatus
 
     make.account(status=AccountStatus.DORMANT)
@@ -546,14 +551,14 @@ def test_results_of_an_unknown_run_are_404(analyst_client):
 # -----------------------------------------------------------------------------
 
 
-def test_a_running_run_can_be_cancelled(analyst_client, make, db, users):
+def test_a_queued_run_can_be_cancelled(analyst_client, make, db, users):
     run = make.analysis_run(
-        status=AnalysisRunStatus.RUNNING, requested_by=users["analyst"]
+        status=AnalysisRunStatus.QUEUED, requested_by=users["analyst"]
     )
     db.commit()
 
     body = assert_ok(analyst_client.post(f"{ANALYSIS}/runs/{run.id}/cancel"))
-    assert body["status"] in ("CANCELLED", "RUNNING")
+    assert body["status"] == "CANCELLED"
 
 
 def test_cancelling_a_finished_run_is_refused_or_a_no_op(analyst_client, make, db, users):
