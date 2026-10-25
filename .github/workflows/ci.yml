@@ -609,12 +609,16 @@ jobs:
     steps:
       - name: Publish outcome on the tested commit
         uses: actions/github-script@v7
+        env:
+          TARGET_SHA: ${{ inputs.checkout_ref }}
+          PR_NUMBER: ${{ inputs.pull_request_number }}
+          CI_FAILED: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
         with:
           script: |
-            const targetSha = "${{ inputs.checkout_ref }}";
-            const failed = ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }};
+            const targetSha = process.env.TARGET_SHA;
+            const failed = process.env.CI_FAILED === "true";
             const state = failed ? "failure" : "success";
-            const prNumber = "${{ inputs.pull_request_number }}";
+            const prNumber = process.env.PR_NUMBER;
             const label = prNumber ? `PR #${prNumber}` : "the target commit";
             const description = `Full CI ${state === "success" ? "passed" : "failed"} for ${label}.`;
             const contextName = prNumber ? `MULEGUARD CI (reconciled PR #${prNumber})` : "MULEGUARD CI (reconciled)";
