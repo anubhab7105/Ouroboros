@@ -15,7 +15,7 @@
 # -----------------------------------------------------------------------------
 # Stage 1: build
 # -----------------------------------------------------------------------------
-FROM node:22-alpine AS build
+FROM node:26-alpine AS build
 
 # Fail the build on a lockfile that disagrees with package.json rather than
 # quietly resolving something else.
