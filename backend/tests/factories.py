@@ -53,6 +53,7 @@ from app.models import (
     CaseEvidence,
     CaseNote,
     CaseStatus,
+    Disposition,
     Channel,
     Complaint,
     ComplaintCorrelation,
@@ -859,7 +860,16 @@ class Factory:
         """An account with an assessment and indicators: the common read shape."""
         account = self.account()
         snapshot = self.feature_snapshot(account)
-        scored = self.assessment(account, score=score, feature_snapshot=snapshot)
+        scored = self.assessment(
+            account,
+            score=score,
+            feature_snapshot=snapshot,
+            caveats_json={
+                "data_classification": "synthetic",
+                "score_semantics": "Investigative priority score, not probability of guilt.",
+                "automatic_adverse_action": False,
+            },
+        )
 
         codes = ["FAN_IN_BURST", "HIGH_THROUGHPUT", "DORMANT_REACTIVATION", "CYCLE_MEMBER"]
         produced = [
@@ -930,6 +940,9 @@ class Factory:
         account: Optional[Account | str] = None,
         **kwargs: Any,
     ) -> InvestigationCase:
+        if status == CaseStatus.CLOSED and "disposition" not in kwargs:
+            kwargs["disposition"] = Disposition.INCONCLUSIVE
+
         return self._add(
             InvestigationCase(
                 title=title,
