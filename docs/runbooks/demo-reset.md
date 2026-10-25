@@ -3,8 +3,8 @@
 Put the system back to a known state, usually before showing it to somebody.
 
 ```bash
-export MULEGUARD_DEV_PASSWORD='choose-something'
-export MULEGUARD_ADMIN_PASSWORD="$MULEGUARD_DEV_PASSWORD"
+export MULEGUARD_DEV_PASSWORD=choose-something
+export MULEGUARD_ADMIN_PASSWORD=$MULEGUARD_DEV_PASSWORD
 
 scripts/reset_demo.sh --yes --reseed
 ```

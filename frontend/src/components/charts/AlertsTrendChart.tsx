@@ -15,7 +15,8 @@ import { formatBucketLabel } from '@/lib/dates';
 import type { FriendlyError } from '@/lib/errorMapper';
 import type { DashboardTrends } from '@/types/dashboard';
 
-import { AXIS_PROPS, ChartFrame, GRID_PROPS, TOOLTIP_PROPS } from './ChartFrame';
+import { ChartFrame } from './ChartFrame';
+import { AXIS_PROPS, GRID_PROPS, TOOLTIP_PROPS } from './chartProps';
 
 export interface AlertsTrendChartProps {
   data?: DashboardTrends;

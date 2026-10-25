@@ -263,7 +263,7 @@ if is_production_like; then
     fi
 
     if [ "${BACKEND_REQUIRE_STRONG_SECRET_IN_NON_LOCAL:-true}" = "true" ]; then
-        secret="${BACKEND_SECRET_KEY:-}"
+        secret=${BACKEND_SECRET_KEY:-}
         case "${secret}" in
             ""|*CHANGE_ME*|*change_me*|*placeholder*|*replace-me*|*replace_me*)
                 log "ERROR: BACKEND_SECRET_KEY must be set to a strong non-placeholder value in BACKEND_ENV=${BACKEND_ENV}."

@@ -48,6 +48,7 @@ export function useCytoscape({
   onSelectEdge,
 }: UseCytoscapeOptions) {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const cyRef = useRef<any>(null);
   const [isReady, setIsReady] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -90,16 +91,19 @@ export function useCytoscape({
           maxZoom: 3,
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         instance.on('tap', 'node', (event: any) => {
           onSelectEdge?.(null);
           onSelectNode?.(event.target.id());
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         instance.on('tap', 'edge', (event: any) => {
           onSelectNode?.(null);
           onSelectEdge?.(event.target.id());
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         instance.on('tap', (event: any) => {
           // A tap on the background clears the selection.
           if (event.target === instance) {

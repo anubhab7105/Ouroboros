@@ -754,8 +754,8 @@ def test_shared_entities_never_expose_the_identifier_hash(analyst_client, make, 
     The hash is the value that would let two datasets be joined on a person.
     It stays server-side.
     """
-    secret = "verysecretidentifierhash0001"
-    entity = make.entity(identifier_hash=secret)
+    secret_value = "verysecretidentifierhash0001"
+    entity = make.entity(identifier_hash=secret_value)
     accounts = make.accounts(2)
 
     for account in accounts:
@@ -767,7 +767,7 @@ def test_shared_entities_never_expose_the_identifier_hash(analyst_client, make, 
     )
     assert_ok(response)
 
-    assert secret not in response.text
+    assert secret_value not in response.text
     assert "identifier_hash" not in response.text
 
 

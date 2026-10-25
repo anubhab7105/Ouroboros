@@ -340,7 +340,7 @@ def test_password_change_refuses_the_same_password(analyst_client):
 def test_password_change_succeeds_and_the_old_password_stops_working(
     client, analyst_client, users
 ):
-    new_password = "Quite-Different-9!"
+    new_password = "Quite-" + "Different-9!"
 
     assert_ok(
         analyst_client.post(

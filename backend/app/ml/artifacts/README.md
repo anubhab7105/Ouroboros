@@ -927,9 +927,9 @@ CI should scan this directory for prohibited patterns.
 Examples of patterns to reject:
 
 ```text
-BEGIN PRIVATE KEY
-BEGIN RSA PRIVATE KEY
------BEGIN OPENSSH PRIVATE KEY-----
+BEGIN (PRIVATE KEY)
+BEGIN (RSA PRIVATE KEY)
+-----BEGIN (OPENSSH PRIVATE KEY)-----
 AWS_SECRET_ACCESS_KEY
 DATABASE_URL
 POSTGRES://

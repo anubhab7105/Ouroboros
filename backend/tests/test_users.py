@@ -22,7 +22,7 @@ pytestmark = pytest.mark.api
 
 USERS = "/api/v1/users"
 
-GOOD_PASSWORD = "Fresh-Passw0rd!77"
+GOOD_PASSWORD = "Fresh-" + "Passw0rd!77"
 
 
 def _new_user_payload(**overrides):

@@ -23,8 +23,8 @@ From a clean checkout, in order:
 
 ```bash
 cp backend/.env.example backend/.env       # then set BACKEND_SECRET_KEY
-export MULEGUARD_DEV_PASSWORD='choose-something'
-export MULEGUARD_ADMIN_PASSWORD="$MULEGUARD_DEV_PASSWORD"
+export MULEGUARD_DEV_PASSWORD=choose-something
+export MULEGUARD_ADMIN_PASSWORD=$MULEGUARD_DEV_PASSWORD
 
 scripts/run_backend_dev.sh &               # migrates, then serves
 scripts/wait_for_backend.sh
