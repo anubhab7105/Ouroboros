@@ -107,7 +107,7 @@ time-machine>=2.15,<3.0
 
 # In-memory filesystem for path-traversal, report filename, and artifact
 # isolation tests.
-pyfakefs>=5.6,<6.0
+pyfakefs>=6.2.0,<7.0
 
 # Property-based testing for:
 #   - decimal amount handling;
