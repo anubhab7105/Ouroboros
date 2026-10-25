@@ -169,7 +169,13 @@ def test_overview_breaks_alerts_down_by_state_and_priority(analyst_client, make,
 def test_overview_breaks_cases_down_by_status(analyst_client, make, db, users):
     make.case(status=CaseStatus.NEW, creator=users["analyst"])
     make.case(status=CaseStatus.ESCALATED, creator=users["analyst"])
-    make.case(status=CaseStatus.CLOSED, creator=users["analyst"])
+    from app.models import Disposition
+
+    make.case(
+        status=CaseStatus.CLOSED,
+        disposition=Disposition.INCONCLUSIVE,
+        creator=users["analyst"],
+    )
     db.commit()
 
     body = assert_ok(analyst_client.get(f"{DASHBOARD}/overview"))
@@ -398,7 +404,7 @@ def test_queues_report_their_sections(analyst_client, make, db, users):
         "unassigned_alerts",
         "my_alerts",
         "new_cases",
-        "under_review_cases",
+        "under_investigation_cases",
         "escalated_cases",
         "unreviewed_complaint_correlations",
     ):
