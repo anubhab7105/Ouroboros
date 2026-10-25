@@ -1,0 +1,73 @@
+{
+  "description": "Six accounts that must be refused, each for one reason, with that reason written down. A rejection fixture whose cases are not explained is a fixture nobody dares change: the next person cannot tell a deliberate case from a typo.",
+  "cases": [
+    {
+      "name": "product_type_where_a_holder_type_belongs",
+      "field": "account_type",
+      "why": "SAVINGS is a banking product. account_type classifies the holder -- INDIVIDUAL, BUSINESS, MERCHANT, OTHER -- so there is no honest mapping and the normalizer deliberately refuses rather than guessing. This exact value was once accepted by the ingestion layer and refused by the database, which is the drift this case guards against returning.",
+      "record": {
+        "id": "ACC-X-01",
+        "account_type": "SAVINGS",
+        "status": "ACTIVE"
+      }
+    },
+    {
+      "name": "enforcement_state_as_a_status",
+      "field": "status",
+      "why": "FROZEN is absent from the status vocabulary and from the aliases, on purpose. MULEGUARD never freezes an account, so it has no value to record for somebody else's decision to do so, and folding it into REVIEW_REQUIRED would file an enforcement action as a request to look.",
+      "record": {
+        "id": "ACC-X-02",
+        "account_type": "INDIVIDUAL",
+        "status": "FROZEN"
+      }
+    },
+    {
+      "name": "created_at_is_not_a_timestamp",
+      "field": "created_at",
+      "why": "Account age feeds the new-account-with-high-throughput signal. An unparseable date would leave the age unknown, and an unknown age scored as zero reads as an account opened today.",
+      "record": {
+        "id": "ACC-X-03",
+        "account_type": "INDIVIDUAL",
+        "status": "ACTIVE",
+        "created_at": "last tuesday"
+      }
+    },
+    {
+      "name": "created_at_in_the_future",
+      "field": "created_at",
+      "why": "An account cannot be opened after now. A small clock-skew tolerance is allowed for a source system whose clock is a minute fast; a date years ahead is a source-system error and would make the account's age negative.",
+      "record": {
+        "id": "ACC-X-04",
+        "account_type": "INDIVIDUAL",
+        "status": "ACTIVE",
+        "created_at": "2031-01-01T00:00:00Z"
+      }
+    },
+    {
+      "name": "metadata_is_not_an_object",
+      "field": "metadata_json",
+      "why": "metadata_json is a JSON object. A list validates as JSON, would be stored, and then fails every sanitiser and reader that expects keys -- at read time, in a different request, with no indication that the cause was an import weeks earlier.",
+      "record": {
+        "id": "ACC-X-05",
+        "account_type": "INDIVIDUAL",
+        "status": "ACTIVE",
+        "metadata_json": [
+          "not",
+          "an",
+          "object"
+        ]
+      }
+    },
+    {
+      "name": "ground_truth_label_smuggled_in",
+      "field": "ground_truth_label",
+      "why": "The field is refused outright rather than ignored. A label on an account record is one careless join away from being a feature, and a model trained on a feature derived from its own label scores perfectly in evaluation and uselessly in production. Refusing loudly is the only version of this that gets noticed.",
+      "record": {
+        "id": "ACC-X-06",
+        "account_type": "INDIVIDUAL",
+        "status": "ACTIVE",
+        "ground_truth_label": "mule"
+      }
+    }
+  ]
+}

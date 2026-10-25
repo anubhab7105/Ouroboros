@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://muleguard.local/schemas/entity-link.schema.json",
+  "title": "entity-link",
+  "description": "One association between an account and a pseudonymous shared identifier, valid over a time range.\n\nThe time range is the point. Two accounts that used the same device two years apart are not connected; two that used it the same week may be. A link with no bounds collapses that distinction and inflates every graph it appears in.\n\nconfidence is absent for a deterministic method and present for an inferred one. Not 1.0 for the deterministic case: a certainty and a probability in the same column invite a reader to compare them.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "account_id",
+    "entity_id",
+    "match_method"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$",
+      "maxLength": 64
+    },
+    "account_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$",
+      "maxLength": 64
+    },
+    "entity_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$",
+      "maxLength": 64
+    },
+    "match_method": {
+      "type": "string",
+      "enum": [
+        "EXACT",
+        "NORMALIZED",
+        "ENTITY_TEMPORAL",
+        "GRAPH_TEMPORAL",
+        "NARRATIVE_EXTRACTION",
+        "MANUAL",
+        "UNKNOWN"
+      ],
+      "description": "How the association was established. EXACT is an observation; NARRATIVE_EXTRACTION is a guess. Which one it is decides whether the link needs a person to confirm it."
+    },
+    "confidence": {
+      "type": [
+        "number",
+        "string",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1,
+      "description": "A fraction in [0, 1], not a percentage. 88 meaning 88% is the commonest error in this field, and it is refused rather than divided by a hundred, because guessing would be wrong for a source that really does mean a confidence above one."
+    },
+    "verification_state": {
+      "type": "string",
+      "enum": [
+        "UNVERIFIED",
+        "VERIFIED",
+        "REJECTED",
+        "NEEDS_REVIEW"
+      ],
+      "default": "UNVERIFIED"
+    },
+    "valid_from": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "valid_to": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time",
+      "description": "Open-ended when absent. Must not precede valid_from: a link that stopped being true before it started would silently match nothing in every window query."
+    },
+    "source": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 100
+    },
+    "metadata_json": {
+      "type": "object",
+      "description": "Free-form synthetic context. Sanitised on ingestion: keys that look like secrets, tokens, raw identifiers, ground-truth labels, scenario ids or ring ids are dropped rather than stored."
+    }
+  }
+}

@@ -1,0 +1,52 @@
+%% How a complaint is matched to accounts and transfers.
+%%
+%% Five tiers. The split between tiers 1-2 and tiers 3-5 is the whole design:
+%% a deterministic match is an identity and carries no confidence score and no
+%% review state, while an inferred match carries both and waits for a person.
+%%
+%% Showing a certainty as 1.000 in the same column as 0.74 would invite a
+%% reader to compare them, so a deterministic correlation stores NULL there
+%% and the interface renders the absence as the word "identity".
+
+flowchart TB
+    CMP["complaint<br/>narrative, reported_at,<br/>optional references"]
+
+    T1{"names a<br/>transaction<br/>reference?"}
+    T2{"names a<br/>suspected<br/>account?"}
+    T3{"identifier in<br/>the narrative?"}
+    T4{"amount and time<br/>within window?"}
+    T5{"entity or graph<br/>association?"}
+
+    D1["TIER 1 -- exact reference<br/>deterministic<br/>no confidence, no review"]
+    D2["TIER 2 -- named account<br/>deterministic<br/>no confidence, no review"]
+    I3["TIER 3 -- extracted identifier<br/>inferred, scored, UNREVIEWED"]
+    I4["TIER 4 -- temporal and amount<br/>inferred, scored, UNREVIEWED"]
+    I5["TIER 5 -- entity association<br/>inferred, scored, UNREVIEWED"]
+    NONE["no correlation<br/>recorded as none,<br/>not as a weak one"]
+
+    REVIEW["review queue<br/>a person accepts or rejects"]
+    ACCEPTED["ACCEPTED"]
+    REJECTED["REJECTED<br/>kept, not deleted"]
+
+    CMP --> T1
+    T1 -->|yes| D1
+    T1 -->|no| T2
+    T2 -->|yes| D2
+    T2 -->|no| T3
+    T3 -->|yes| I3
+    T3 -->|no| T4
+    T4 -->|yes| I4
+    T4 -->|no| T5
+    T5 -->|yes| I5
+    T5 -->|no| NONE
+
+    I3 --> REVIEW
+    I4 --> REVIEW
+    I5 --> REVIEW
+    REVIEW --> ACCEPTED
+    REVIEW --> REJECTED
+
+    classDef deterministic fill:#eaf4ee,stroke:#1f6f50
+    classDef inferred fill:#fdf6e9,stroke:#8a6d1f
+    class D1,D2 deterministic
+    class I3,I4,I5,REVIEW inferred

@@ -1,0 +1,90 @@
+{
+  "description": "Seven transfers that must be refused. Four are about the amount, because the amount is the field most often wrong in a real feed and the one whose errors survive longest.",
+  "cases": [
+    {
+      "name": "zero_amount",
+      "field": "amount",
+      "why": "A zero transfer is not an event. It would be counted in every transfer-count feature while contributing nothing to any value feature, which is a velocity signal with no money behind it.",
+      "record": {
+        "reference": "TXN-X-01",
+        "sender_account_id": "ACC-S-SENDER-01",
+        "receiver_account_id": "ACC-S-COLLECTOR",
+        "amount": "0.00",
+        "occurred_at": "2026-04-13T10:00:00Z"
+      }
+    },
+    {
+      "name": "negative_amount",
+      "field": "amount",
+      "why": "Direction is carried by the sender and receiver columns, not by the sign. A negative amount would be summed as a negative inflow and could cancel a real one, producing a throughput of nearly zero for an account with heavy traffic.",
+      "record": {
+        "reference": "TXN-X-02",
+        "sender_account_id": "ACC-S-SENDER-01",
+        "receiver_account_id": "ACC-S-COLLECTOR",
+        "amount": "-5000.00",
+        "occurred_at": "2026-04-13T10:00:00Z"
+      }
+    },
+    {
+      "name": "amount_with_thousands_separators",
+      "field": "amount",
+      "why": "'24,000.00' is what a spreadsheet export produces. It is refused rather than parsed, because the comma is a decimal separator in much of the world and guessing which one it is here would be a factor-of-a-hundred error in a monetary figure.",
+      "record": {
+        "reference": "TXN-X-03",
+        "sender_account_id": "ACC-S-SENDER-01",
+        "receiver_account_id": "ACC-S-COLLECTOR",
+        "amount": "24,000.00",
+        "occurred_at": "2026-04-13T10:00:00Z"
+      }
+    },
+    {
+      "name": "amount_without_currency",
+      "field": "currency",
+      "why": "Defaulted rather than refused, and listed here because the default is the interesting part: the configured default currency is applied and a caveat is recorded. Per-currency totals are never summed, so an amount filed under the wrong currency is invisible rather than wrong -- it just stops appearing in the total it belongs to.",
+      "record": {
+        "reference": "TXN-X-04",
+        "sender_account_id": "ACC-S-SENDER-01",
+        "receiver_account_id": "ACC-S-COLLECTOR",
+        "amount": "24000.00",
+        "occurred_at": "2026-04-13T10:00:00Z"
+      },
+      "expected": "accepted with a defaulted currency and a caveat"
+    },
+    {
+      "name": "missing_reference",
+      "field": "reference",
+      "why": "reference is required and unique. It is how a complaint naming a transaction is matched to one, which is the entirety of tier-1 correlation -- the only tier that needs no confidence score and no human review.",
+      "record": {
+        "sender_account_id": "ACC-S-SENDER-01",
+        "receiver_account_id": "ACC-S-COLLECTOR",
+        "amount": "24000.00",
+        "occurred_at": "2026-04-13T10:00:00Z"
+      }
+    },
+    {
+      "name": "unknown_sender_account",
+      "field": "sender_account_id",
+      "why": "Both account columns are foreign keys. An unknown sender must fail rather than being created, because an account conjured from a transfer has no opening date, type or status, and would score as a brand-new account forever.",
+      "record": {
+        "reference": "TXN-X-06",
+        "sender_account_id": "ACC-DOES-NOT-EXIST",
+        "receiver_account_id": "ACC-S-COLLECTOR",
+        "amount": "24000.00",
+        "occurred_at": "2026-04-13T10:00:00Z"
+      }
+    },
+    {
+      "name": "channel_outside_the_vocabulary",
+      "field": "channel",
+      "why": "CHEQUE has no value in the channel enum and no honest alias. The normalizer maps a source system's wording where the meaning is unambiguous -- WIRE to NEFT, INSTANT to IMPS -- and refuses where it is not, rather than filing the record under the nearest-looking rail.",
+      "record": {
+        "reference": "TXN-X-07",
+        "sender_account_id": "ACC-S-SENDER-01",
+        "receiver_account_id": "ACC-S-COLLECTOR",
+        "amount": "24000.00",
+        "occurred_at": "2026-04-13T10:00:00Z",
+        "channel": "CHEQUE"
+      }
+    }
+  ]
+}

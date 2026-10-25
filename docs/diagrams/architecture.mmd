@@ -1,0 +1,59 @@
+%% MULEGUARD system architecture.
+%%
+%% One backend process, one database, one browser application. The shape is a
+%% modular monolith rather than services -- see docs/adr/accepted/0001.
+%%
+%% Render: mmdc -i architecture.mmd -o architecture.svg
+%%         or paste into https://mermaid.live
+
+graph TB
+    subgraph browser["Browser"]
+        UI["React + TypeScript<br/>Vite, TanStack Query"]
+    end
+
+    subgraph backend["Backend process (FastAPI)"]
+        API["API layer<br/>app/api/v1/endpoints/*<br/>auth, validation, response models"]
+
+        subgraph services["Service layer (app/services/*)"]
+            ANALYSIS["analysis<br/>orchestrates a run"]
+            RULES["rules engine<br/>typology rules"]
+            RISK["risk fusion<br/>rules + model + graph + complaints"]
+            GRAPH["graph<br/>bounded BFS over transfers"]
+            CORR["correlation<br/>complaint to account, 5 tiers"]
+            CASES["cases<br/>state machine, evidence"]
+            AUDIT["audit<br/>append-only record"]
+        end
+
+        subgraph ml["ML layer (app/ml/*)"]
+            FEATURES["features<br/>point-in-time, as_of"]
+            MODEL["supervised<br/>logistic / softmax"]
+            FALLBACK["heuristic fallback<br/>when no model is trained"]
+        end
+
+        INGEST["ingestion<br/>normalize, validate, dedupe"]
+    end
+
+    DB[("PostgreSQL<br/>23 tables<br/>SQLite in dev")]
+
+    FILES["data/samples<br/>data/generated"]
+
+    UI -->|"REST + bearer token"| API
+    API --> services
+    API --> INGEST
+    ANALYSIS --> RULES
+    ANALYSIS --> RISK
+    ANALYSIS --> FEATURES
+    RISK --> MODEL
+    RISK --> FALLBACK
+    RISK --> GRAPH
+    RISK --> CORR
+    services --> DB
+    ml --> DB
+    INGEST --> DB
+    FILES -.->|"scripts/import_json.py"| INGEST
+    services -.-> AUDIT
+
+    classDef store fill:#eef3fb,stroke:#2f63ad
+    classDef safety fill:#fdf6e9,stroke:#8a6d1f
+    class DB,FILES store
+    class FALLBACK safety

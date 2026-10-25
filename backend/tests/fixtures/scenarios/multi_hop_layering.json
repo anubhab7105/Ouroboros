@@ -1,0 +1,22 @@
+{
+  "id": "multi_hop_layering",
+  "label": "Multi-hop layering chain",
+  "description": "A sequence of accounts, each forwarding most of what it received to the next. Distance between the origin and the destination is the purpose: each hop makes the trail harder to follow and adds a party who can claim not to have known.",
+  "parameters": {
+    "hops": 5,
+    "amount": 480000,
+    "throughput": 0.97,
+    "minutes_between": 14
+  },
+  "expected": {
+    "rule_codes": ["LAYERING_CHAIN", "HIGH_THROUGHPUT"],
+    "min_risk_band": "CRITICAL",
+    "ground_truth_label": true,
+    "scenario_type": "layering_chain"
+  },
+  "confounders": [
+    "A payment through two or three intermediaries that each genuinely take a cut: an aggregator, a payment facilitator, a settlement bank.",
+    "A chain of related-party transfers within a group of companies at month end."
+  ],
+  "notes": "This is the shape that most needs care in how it is shown. A chain found by traversal is a sequence of transfers consistent with layering — it is not a tracing of particular funds. Accounts are fungible: once money lands in an account that already held money, which rupees left is a question the ledger cannot answer. The interface says 'candidate path', the reports repeat it, and the term 'money trail' is used as a shape, never as a claim about specific currency."
+}

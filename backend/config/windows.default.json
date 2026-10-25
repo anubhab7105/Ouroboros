@@ -1,0 +1,72 @@
+{
+  "windows_version": "v1",
+  "description": "Analysis window definitions used by feature construction, rule evaluation, and dashboard trends.",
+  "semantics": {
+    "bounds": "half_open",
+    "notation": "[start, end)",
+    "anchor": "as_of",
+    "timezone": "UTC",
+    "notes": [
+      "Every window ends at the as_of instant and is exclusive of it, which is what keeps feature computation point-in-time correct.",
+      "Half-open bounds mean adjacent windows tile the timeline without counting a transaction twice.",
+      "Naive timestamps are interpreted as UTC, never as deployment local time, so results do not change with server placement."
+    ]
+  },
+  "definitions": [
+    {"label": "1h", "seconds": 3600, "use": "burst detection", "features": ["txn_count_1h"]},
+    {"label": "24h", "seconds": 86400, "use": "rapid pass-through and daily velocity", "features": ["txn_count_24h", "txn_amount_sum_24h", "txn_amount_mean_24h", "txn_amount_max_24h", "txn_count_burstiness_24h", "txn_interarrival_mean_seconds_24h"]},
+    {"label": "7d", "seconds": 604800, "use": "short-term trend and change detection", "features": ["txn_count_7d", "txn_amount_sum_7d", "balance_drop_ratio_7d", "channel_switch_count_7d", "txn_count_delta_7d_vs_prior_7d", "txn_amount_delta_7d_vs_prior_7d", "txn_count_pct_change_7d"]},
+    {"label": "30d", "seconds": 2592000, "use": "primary behavioural baseline", "features": ["txn_count_30d", "txn_amount_sum_30d", "counterparty_hhi_30d", "graph_degree_30d", "complaint_count_30d"]},
+    {"label": "90d", "seconds": 7776000, "use": "long-horizon context", "features": ["txn_count_90d"]},
+    {"label": "all", "seconds": null, "use": "lifetime totals", "features": ["txn_count_all"]}
+  ],
+  "primary_window": "30d",
+  "comparison_pairs": [
+    {
+      "name": "velocity_ratio_7d_30d",
+      "numerator": "7d",
+      "denominator": "30d",
+      "feature": "txn_count_velocity_ratio_7d_30d",
+      "interpretation": "A value well above 0.233 (7/30) means activity is concentrated in the recent week."
+    },
+    {
+      "name": "week_over_week",
+      "current": "7d",
+      "prior": "prior_7d",
+      "feature": "txn_count_delta_7d_vs_prior_7d",
+      "interpretation": "Compares the last seven days against the seven days before them."
+    }
+  ],
+  "limits": {
+    "max_window_days": 365,
+    "max_lookback_days": 730,
+    "max_trend_buckets": 180,
+    "default_dashboard_window_days": 30,
+    "notes": [
+      "max_lookback_days bounds how far a point-in-time replay may reach, so a backfill cannot scan the whole table.",
+      "max_trend_buckets bounds dashboard responses; a wide range is downsampled to a coarser granularity instead of returning thousands of points."
+    ]
+  },
+  "trend_granularity": {
+    "rules": [
+      {"max_span_days": 2, "granularity": "hour"},
+      {"max_span_days": 90, "granularity": "day"},
+      {"max_span_days": 365, "granularity": "week"},
+      {"max_span_days": null, "granularity": "month"}
+    ],
+    "notes": ["Granularity is chosen from the requested span so a response never exceeds max_trend_buckets."]
+  },
+  "dormancy": {
+    "dormant_after_days_without_activity": 90,
+    "reactivation_window_days": 7,
+    "notes": ["An account is treated as dormant when it had no completed transfers for 90 days before the window."]
+  },
+  "night_hours_utc": {
+    "start_hour": 0,
+    "end_hour": 5,
+    "notes": [
+      "Night hours are evaluated in UTC in this prototype.",
+      "A production deployment should evaluate them in the account holder's local timezone; doing so in UTC mislabels legitimate daytime activity in some regions."
+    ]
+  }
+}

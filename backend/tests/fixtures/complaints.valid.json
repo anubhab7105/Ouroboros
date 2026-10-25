@@ -1,0 +1,55 @@
+{
+  "description": "Cybercrime complaints. The narratives are invented and describe no actual incident.",
+  "records": [
+    {
+      "reference": "CMP-V-0001",
+      "reported_at": "2025-11-14T05:40:00Z",
+      "category": "upi_fraud",
+      "narrative_raw": "Complainant states that funds were debited from the account after an unsolicited call from a person claiming to be bank staff. The caller asked for a verification code which the complainant provided. Transaction reference quoted by the complainant is TXN-V-0001.",
+      "transaction_reference": "TXN-V-0001",
+      "victim_account_id": "ACC-V-01",
+      "suspected_account_id": "ACC-V-02",
+      "amount": 48500.00,
+      "currency": "INR",
+      "source": "fixture"
+    },
+    {
+      "reference": "CMP-V-0002",
+      "reported_at": "2025-11-14T08:15:00Z",
+      "category": "investment_fraud",
+      "narrative_raw": "Complainant transferred money in response to an online advertisement promising guaranteed monthly returns. No returns were received and the contact number is no longer in service.",
+      "victim_account_id": "ACC-V-03",
+      "amount": 49200.00,
+      "currency": "INR",
+      "source": "fixture",
+      "metadata_json": {
+        "note": "No transaction reference and no named suspect. This is the common case, and it is why the correlation tiers below tier 2 exist at all."
+      }
+    },
+    {
+      "reference": "CMP-V-0003",
+      "reported_at": "2025-11-15T11:00:00Z",
+      "category": "other",
+      "narrative_raw": "Complainant reports an unrecognised debit. No further detail was available at the time of filing.",
+      "source": "fixture",
+      "metadata_json": {
+        "note": "Deliberately thin. A complaint that correlates to nothing is a normal outcome and must not be presented as a failed match."
+      }
+    },
+    {
+      "reference": "CMP-V-0004",
+      "reported_at": "2025-11-16T14:22:00Z",
+      "category": "impersonation",
+      "narrative_raw": "Complainant was contacted through a messaging application by someone using the name of a relative and asking for an urgent transfer. The transfer was made to an account the complainant did not recognise.",
+      "victim_account_id": "ACC-V-05",
+      "suspected_account_id": "ACC-V-04",
+      "amount": 25000.00,
+      "currency": "INR",
+      "source": "fixture"
+    }
+  ],
+  "options": {
+    "source_system": "fixture",
+    "source_batch_id": "complaints-valid-001"
+  }
+}

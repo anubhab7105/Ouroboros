@@ -1,0 +1,893 @@
+{
+  "$schema": "https://muleguard.invalid/schema/ml/model_manifest/v1.json",
+  "manifest_id": "muleguard.ml.model_manifest.example.v1",
+  "manifest_version": "v1",
+  "document_type": "model_manifest_example",
+  "example_only": true,
+  "generated_at": "2026-10-20T00:00:00Z",
+  "status": "EXAMPLE_ONLY",
+  "synthetic_only": true,
+  "production_ready": false,
+  "regulatory_compliance_claimed": false,
+  "repository_policy": {
+    "directory": "muleguard/backend/app/ml/artifacts",
+    "file_role": "inert_documentation_example",
+    "is_runtime_artifact": false,
+    "is_model_binary": false,
+    "is_dataset": false,
+    "contains_raw_values": false,
+    "contains_subject_label_pairs": false,
+    "contains_raw_identifiers": false,
+    "contains_raw_narratives": false,
+    "contains_ground_truth_labels": false,
+    "contains_scenario_ids": false,
+    "contains_fraud_ring_ids": false,
+    "contains_secrets": false,
+    "contains_tokens": false,
+    "contains_passwords": false,
+    "contains_private_keys": false,
+    "contains_database_urls": false,
+    "contains_filesystem_paths": false,
+    "contains_production_endpoints": false,
+    "contains_deployment_bundles": false,
+    "ci_guidance": "If the artifacts directory is restricted to inert files such as .gitkeep and README.md, move this example to docs/examples, tests/fixtures, or another governed documentation location before merge.",
+    "sentinel": "muleguard.ml.artifacts.model_manifest.example:v1:inert-documentation"
+  },
+  "product_safety": {
+    "notice": "MULEGUARD is a synthetic-first investigative prototype. Model scores, anomaly scores, fallback scores, explanations, validation reports, and manifest metadata are investigative prioritization artefacts only. They are not proof of wrongdoing.",
+    "score_interpretation": "investigative_prioritization_signal_only",
+    "scores_are_probabilities_of_guilt": false,
+    "feature_contributions_are_causal_proof": false,
+    "automatic_adverse_customer_action_allowed": false,
+    "human_review_required_for_consequential_action": true,
+    "prohibited_automatic_actions": [
+      "freeze_account",
+      "close_account",
+      "block_customer",
+      "blacklist_customer",
+      "restrict_service",
+      "deny_service",
+      "terminate_relationship",
+      "law_enforcement_referral",
+      "credit_decision",
+      "employment_decision",
+      "housing_decision",
+      "insurance_decision",
+      "benefit_eligibility_decision"
+    ],
+    "required_safety_flags": {
+      "synthetic_only_by_default": true,
+      "no_real_customer_data_by_default": true,
+      "no_labels_as_features": true,
+      "no_raw_values_in_public_summaries": true,
+      "no_ground_truth_fields_accepted": true,
+      "no_fraud_label_fields_accepted": true,
+      "no_scenario_ids_accepted": true,
+      "no_fraud_ring_ids_accepted": true,
+      "no_raw_narratives_accepted": true,
+      "no_raw_identifiers_accepted": true,
+      "no_secrets_accepted": true,
+      "salted_pseudonymous_subject_hashes": true,
+      "deterministic_model_service": true,
+      "bounded_model_service_required": true,
+      "scores_are_investigative_priority_only": true,
+      "contributions_are_not_causal_proof": true,
+      "no_automatic_adverse_customer_action": true,
+      "not_production_ready": true
+    }
+  },
+  "intended_use": {
+    "primary_use": "Demonstrate a safe, bounded, privacy-preserving, leakage-aware model manifest for the synthetic MULEGUARD ML prototype.",
+    "operational_role": "investigative_prioritization_metadata_example",
+    "decision_authority": "none",
+    "authorized_users": [
+      "backend_developers",
+      "ml_prototype_developers",
+      "test_engineers",
+      "security_reviewers",
+      "privacy_reviewers",
+      "ml_governance_reviewers",
+      "investigators_in_non_production_environment"
+    ],
+    "deployment_environment": "local_prototype_only",
+    "input_contract": "Bounded synthetic aggregate feature records with pseudonymous subject references only.",
+    "output_contract": "Bounded scores, risk bands, contributions, diagnostics, fingerprints, issues, and safe summaries only."
+  },
+  "prohibited_uses": [
+    "Processing real customer data.",
+    "Production fraud detection or enforcement.",
+    "Automated account freezing, blocking, blacklisting, closure, restriction, or denial of service.",
+    "Credit, employment, housing, insurance, benefits, or other consequential automated decision-making.",
+    "Use as legal evidence of wrongdoing.",
+    "Use as proof of fraud, intent, conspiracy, or criminal association.",
+    "Storage of raw complaint narratives.",
+    "Storage of raw identifiers.",
+    "Storage of subject-label pairs.",
+    "Storage of ground-truth labels.",
+    "Storage of scenario IDs or fraud-ring IDs.",
+    "Storage of secrets, tokens, passwords, private keys, database URLs, or filesystem paths.",
+    "Committing model binaries, datasets, pickles, joblib artifacts, ONNX artifacts, TorchScript artifacts, SavedModels, notebooks, logs, caches, or exports to this directory."
+  ],
+  "limitations": [
+    "This manifest is an example only and does not represent a trained or deployed model.",
+    "MULEGUARD ML artifacts are process-local, non-durable, and bounded unless a separate governed registry is introduced.",
+    "Synthetic labels are evaluation fixtures only and are not ground truth.",
+    "Scores are investigative prioritization signals only and are not probabilities of guilt.",
+    "Feature contributions are operational attributions only and are not causal proof.",
+    "No regulatory compliance is claimed.",
+    "No production readiness is claimed.",
+    "Fairness, bias, drift, privacy, security, and legal review are required before any real-world deployment.",
+    "Evaluation metrics in this example are intentionally unavailable rather than invented."
+  ],
+  "ethical_and_human_oversight": {
+    "human_oversight_required": true,
+    "appeal_or_review_path_required_for_real_deployments": true,
+    "minimize_harm_principle": true,
+    "presumption_of_innocence_principle": true,
+    "investigative_lead_only_principle": true,
+    "privacy_by_design": true,
+    "leakage_by_design_controls": true,
+    "explainability_for_review_principle": true,
+    "fairness_review_required_before_real_deployment": true,
+    "bias_testing_required_before_real_deployment": true,
+    "legal_review_required_before_real_deployment": true,
+    "security_review_required_before_real_deployment": true,
+    "privacy_review_required_before_real_deployment": true
+  },
+  "model": {
+    "model_id": "example.synthetic.muleguard.investigative_prioritizer.v1",
+    "model_name": "MULEGUARD Synthetic Investigative Prioritizer Example",
+    "model_family": "bounded_linear_logistic_plus_anomaly_heuristic_example",
+    "model_task": "synthetic_investigative_prioritization",
+    "model_type": "prototype_investigative_score_model",
+    "model_fingerprint": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+    "algorithm_summary": "Example bounded synthetic prioritizer combining regularized linear scoring, anomaly-distance heuristics, fallback scoring, and hybrid blending for investigative triage only.",
+    "output_space": {
+      "score": {
+        "type": "float",
+        "minimum": 0.0,
+        "maximum": 1.0,
+        "interpretation": "investigative_prioritization_signal_only"
+      },
+      "risk_bands": ["low", "medium", "high", "critical", "unavailable"],
+      "label_codes": [0, 1, 2, 3, 4],
+      "decision_sources": [
+        "supervised_model",
+        "anomaly_model",
+        "fallback_heuristic",
+        "hybrid_ensemble",
+        "unavailable"
+      ]
+    },
+    "parameters_summary": {
+      "feature_count": 8,
+      "regularization": "l2_example",
+      "default_review_threshold": 0.6,
+      "anomaly_method": "bounded_distance_heuristic_example",
+      "fallback_method": "transparent_rule_based_example",
+      "hybrid_method": "bounded_weighted_ensemble_example"
+    },
+    "artifact_locator": {
+      "type": "process_local_catalog_entry",
+      "value": null,
+      "path_retained": false,
+      "uri_retained": false,
+      "binary_retained": false
+    },
+    "serialization": {
+      "format": "none",
+      "binary_committed": false,
+      "pickle_allowed": false,
+      "joblib_allowed": false,
+      "onnx_allowed": false,
+      "torchscript_allowed": false,
+      "saved_model_allowed": false,
+      "custom_code_execution_allowed": false,
+      "deserialization_requires_governed_registry": true
+    },
+    "lifecycle_state": "EXAMPLE_ONLY",
+    "promotion_to_production_allowed": false
+  },
+  "data": {
+    "source": "synthetic_generator_fixture_only",
+    "real_customer_data_allowed": false,
+    "pii_allowed": false,
+    "raw_identifiers_allowed": false,
+    "raw_narratives_allowed": false,
+    "ground_truth_labels_allowed_as_features": false,
+    "scenario_ids_allowed_as_features": false,
+    "fraud_ring_ids_allowed_as_features": false,
+    "subject_label_pairs_retained": false,
+    "raw_values_retained": false,
+    "declared_record_count": null,
+    "observed_record_count": null,
+    "collection_period": null,
+    "representativeness": "synthetic_fixture_representativeness_unknown",
+    "lineage": {
+      "generator": "muleguard.synthetic.fixture_generator_example",
+      "seed": 42,
+      "deterministic": true,
+      "persistent_storage_allowed": false
+    },
+    "datasheet": {
+      "purpose": "Synthetic ML prototype testing and documentation only.",
+      "source": "Programmatically generated synthetic fixtures.",
+      "population": "Not representative of real customers.",
+      "labels": "Synthetic evaluation fixtures only, not ground truth.",
+      "sensitive_attributes": "No raw sensitive attributes are retained in this manifest.",
+      "collection_method": "Deterministic synthetic generation.",
+      "preprocessing": "Bounded aggregation, canonicalization, pseudonymization, and leakage filtering.",
+      "usage_restrictions": "Must not be used with real customer data or production enforcement."
+    }
+  },
+  "features": {
+    "schema_policy": {
+      "labels_as_features_allowed": false,
+      "ground_truth_fields_allowed": false,
+      "fraud_label_fields_allowed": false,
+      "scenario_id_fields_allowed": false,
+      "fraud_ring_id_fields_allowed": false,
+      "raw_identifier_fields_allowed": false,
+      "raw_narrative_fields_allowed": false,
+      "secret_fields_allowed": false,
+      "token_fields_allowed": false,
+      "password_fields_allowed": false,
+      "private_key_fields_allowed": false,
+      "database_url_fields_allowed": false,
+      "filesystem_path_fields_allowed": false,
+      "model_artifact_path_fields_allowed": false,
+      "unknown_feature_policy": "warn_or_drop_by_environment_policy",
+      "raw_feature_values_retained_in_manifest": false
+    },
+    "feature_names_retained": true,
+    "raw_feature_values_retained": false,
+    "schema": [
+      {
+        "name": "txn_count_24h",
+        "dtype": "numeric",
+        "description": "Bounded synthetic count of transactions in a 24-hour aggregate window.",
+        "nullable": true,
+        "required": false,
+        "minimum": 0.0,
+        "maximum": null,
+        "unit": "count",
+        "privacy_sensitive": false,
+        "leakage_sensitive": false,
+        "missing_policy": "missing_indicator_allowed",
+        "transform_summary": "bounded_nonnegative_numeric_example"
+      },
+      {
+        "name": "beneficiary_entropy",
+        "dtype": "numeric",
+        "description": "Bounded synthetic entropy over aggregated beneficiary distribution.",
+        "nullable": true,
+        "required": false,
+        "minimum": 0.0,
+        "maximum": null,
+        "unit": "normalized_entropy",
+        "privacy_sensitive": false,
+        "leakage_sensitive": false,
+        "missing_policy": "missing_indicator_allowed",
+        "transform_summary": "nonnegative_entropy_example"
+      },
+      {
+        "name": "device_cluster_degree",
+        "dtype": "numeric",
+        "description": "Bounded synthetic graph degree for device-cluster aggregation.",
+        "nullable": true,
+        "required": false,
+        "minimum": 0.0,
+        "maximum": null,
+        "unit": "degree",
+        "privacy_sensitive": false,
+        "leakage_sensitive": false,
+        "missing_policy": "missing_indicator_allowed",
+        "transform_summary": "bounded_graph_degree_example"
+      },
+      {
+        "name": "ip_subnet_share",
+        "dtype": "numeric",
+        "description": "Bounded synthetic share of activity within an aggregated network subnet bucket. Raw IP addresses are never retained.",
+        "nullable": true,
+        "required": false,
+        "minimum": 0.0,
+        "maximum": 1.0,
+        "unit": "share",
+        "privacy_sensitive": true,
+        "leakage_sensitive": false,
+        "missing_policy": "missing_indicator_allowed",
+        "transform_summary": "bounded_share_example_raw_ip_never_retained"
+      },
+      {
+        "name": "velocity_burstiness",
+        "dtype": "numeric",
+        "description": "Bounded synthetic velocity burstiness metric derived from aggregate timing features.",
+        "nullable": true,
+        "required": false,
+        "minimum": 0.0,
+        "maximum": null,
+        "unit": "score",
+        "privacy_sensitive": false,
+        "leakage_sensitive": false,
+        "missing_policy": "missing_indicator_allowed",
+        "transform_summary": "nonnegative_burstiness_example"
+      },
+      {
+        "name": "counterparty_concentration",
+        "dtype": "numeric",
+        "description": "Bounded synthetic concentration measure over counterparties, such as HHI-like aggregate.",
+        "nullable": true,
+        "required": false,
+        "minimum": 0.0,
+        "maximum": 1.0,
+        "unit": "concentration",
+        "privacy_sensitive": false,
+        "leakage_sensitive": false,
+        "missing_policy": "missing_indicator_allowed",
+        "transform_summary": "bounded_concentration_example"
+      },
+      {
+        "name": "complaint_correlation_count",
+        "dtype": "numeric",
+        "description": "Bounded synthetic count of correlated complaint signals. Raw complaint narratives are never retained.",
+        "nullable": true,
+        "required": false,
+        "minimum": 0.0,
+        "maximum": null,
+        "unit": "count",
+        "privacy_sensitive": true,
+        "leakage_sensitive": false,
+        "missing_policy": "missing_indicator_allowed",
+        "transform_summary": "aggregate_complaint_signal_count_raw_narratives_never_retained"
+      },
+      {
+        "name": "historical_case_link_degree",
+        "dtype": "numeric",
+        "description": "Bounded synthetic degree of links to prior investigative cases, using pseudonymous case references only.",
+        "nullable": true,
+        "required": false,
+        "minimum": 0.0,
+        "maximum": null,
+        "unit": "degree",
+        "privacy_sensitive": true,
+        "leakage_sensitive": false,
+        "missing_policy": "missing_indicator_allowed",
+        "transform_summary": "pseudonymous_case_link_degree_example"
+      }
+    ]
+  },
+  "labels": {
+    "synthetic_only": true,
+    "ground_truth": false,
+    "evaluation_fixture_only": true,
+    "subject_label_pairs_retained": false,
+    "raw_labels_retained": false,
+    "label_codes": {
+      "0": "unknown_or_unlabeled",
+      "1": "negative_or_no_action",
+      "2": "review_or_investigate",
+      "3": "escalate_or_high_priority",
+      "4": "uncertain_or_needs_human"
+    },
+    "positive_label_codes": [2, 3],
+    "negative_label_codes": [1],
+    "ignore_label_codes": [0],
+    "uncertain_label_codes": [4],
+    "label_leakage_policy": {
+      "labels_as_features_allowed": false,
+      "forbidden_label_like_feature_fields": [
+        "label",
+        "label_code",
+        "target",
+        "y",
+        "ground_truth",
+        "ground_truth_label",
+        "truth_label",
+        "fraud_label",
+        "is_fraud",
+        "synthetic_label",
+        "scenario_id",
+        "ring_id",
+        "fraud_ring_id"
+      ]
+    }
+  },
+  "splits": {
+    "strategy": "deterministic_group_aware_stratified_example",
+    "seed": 42,
+    "deterministic": true,
+    "ratios": {
+      "train": 0.7,
+      "validation": 0.15,
+      "test": 0.15
+    },
+    "grouping_key": "pseudonymous_subject_ref_hash",
+    "isolation_checks": {
+      "train_validation_subject_overlap_allowed": false,
+      "train_test_subject_overlap_allowed": false,
+      "validation_test_subject_overlap_allowed": false,
+      "temporal_leakage_checks_required_before_real_use": true,
+      "status": "example_not_executed"
+    },
+    "minimum_counts": {
+      "train": 20,
+      "validation": 5,
+      "test": 5
+    },
+    "minimum_class_support": 3,
+    "maximum_class_imbalance_ratio": 100.0
+  },
+  "preprocessing": {
+    "fitted": false,
+    "persisted": false,
+    "process_local_only": true,
+    "fit_scope": "train_only_if_executed",
+    "transform_scope": "validation_test_and_inference_only_after_train_fit",
+    "steps": [
+      "canonicalize_feature_names",
+      "drop_or_reject_forbidden_fields",
+      "reject_label_leakage_fields",
+      "bounded_numeric_validation",
+      "bounded_categorical_hashing_example",
+      "missing_indicator_generation_example",
+      "standardization_example",
+      "deterministic_feature_ordering"
+    ],
+    "leakage_controls": {
+      "target_transformation_allowed": false,
+      "label_encoding_into_features_allowed": false,
+      "future_information_allowed": false,
+      "raw_narrative_featurization_allowed": false,
+      "raw_identifier_featurization_allowed": false
+    },
+    "artifact_retention": {
+      "raw_values_retained": false,
+      "subject_label_pairs_retained": false,
+      "filesystem_paths_retained": false
+    }
+  },
+  "training": {
+    "executed": false,
+    "reason": "This manifest is an inert example and does not execute training.",
+    "job_id": null,
+    "run_fingerprint": null,
+    "hyperparameters": {
+      "learning_rate_example": 0.01,
+      "l2_strength_example": 0.01,
+      "max_iterations_example": 100,
+      "anomaly_quantile_example": 0.99,
+      "hybrid_weights": {
+        "supervised": 0.5,
+        "anomaly": 0.3,
+        "fallback": 0.2
+      }
+    },
+    "resource_limits": {
+      "max_records": 10000,
+      "max_features": 512,
+      "max_issues": 100,
+      "max_latency_ms": 15000,
+      "max_time_ms": 30000
+    },
+    "determinism": {
+      "seed": 42,
+      "stable_sorting_required": true,
+      "hmac_based_sampling_example": true,
+      "random_state_serialized": false
+    },
+    "governance": {
+      "requires_approval_for_real_training": true,
+      "requires_synthetic_dataset_mode": true,
+      "requires_privacy_scan": true,
+      "requires_leakage_scan": true
+    }
+  },
+  "evaluation": {
+    "executed": false,
+    "reason": "This manifest is an inert example and does not execute evaluation.",
+    "metrics_available": false,
+    "metrics": {
+      "binary": {
+        "available": false,
+        "roc_auc": null,
+        "pr_auc": null,
+        "f1": null,
+        "precision": null,
+        "recall": null,
+        "false_positive_rate": null,
+        "false_negative_rate": null,
+        "balanced_accuracy": null,
+        "log_loss": null,
+        "brier_score": null,
+        "expected_calibration_error": null
+      },
+      "multiclass": {
+        "available": false,
+        "accuracy": null,
+        "macro_f1": null,
+        "weighted_f1": null
+      }
+    },
+    "threshold_policy": {
+      "default": "fixed",
+      "supported": [
+        "fixed",
+        "max_f1",
+        "max_you_j",
+        "min_fnr_at_fpr",
+        "max_precision_at_recall",
+        "balanced_accuracy"
+      ],
+      "selection_split": "validation",
+      "reporting_split": "test",
+      "raw_scores_exposed": false
+    },
+    "slice_analysis": {
+      "enabled_in_policy": true,
+      "raw_feature_values_exposed": false,
+      "subject_label_pairs_exposed": false,
+      "minimum_slice_count": 10,
+      "maximum_slices": 100
+    },
+    "stability_analysis": {
+      "enabled_in_policy": true,
+      "bootstrap_iterations_example": 200,
+      "deterministic_bootstrap": true,
+      "raw_resamples_retained": false
+    },
+    "calibration": {
+      "available": false,
+      "bins": 10,
+      "curve_retained": false
+    }
+  },
+  "explainability": {
+    "enabled_in_policy": true,
+    "methods": [
+      "coefficient",
+      "model_contributions",
+      "local_surrogate",
+      "permutation",
+      "sensitivity",
+      "hybrid"
+    ],
+    "contributions_are_operational_attributions_only": true,
+    "contributions_are_causal_proof": false,
+    "local_explanations_raw_values_exposed": false,
+    "global_importance_raw_values_exposed": false,
+    "subject_label_pairs_exposed": false,
+    "maximum_contributions": 20,
+    "stability_estimation_enabled": true,
+    "confidence_semantics": "operational_method_agreement_and_bounded_uncertainty_only"
+  },
+  "validation": {
+    "status": "EXAMPLE_ONLY",
+    "schema_validation_required": true,
+    "privacy_scan_required": true,
+    "leakage_scan_required": true,
+    "duplicate_detection_required": true,
+    "target_copy_detection_required": true,
+    "drift_detection_required_before_real_use": true,
+    "prediction_validation_required_when_predictions_present": true,
+    "model_metadata_validation_required": true,
+    "report_retention": {
+      "process_local_only": true,
+      "repository_persistence_allowed": false,
+      "raw_values_retained": false
+    }
+  },
+  "privacy": {
+    "synthetic_only": true,
+    "real_customer_data_allowed": false,
+    "raw_identifiers_allowed": false,
+    "raw_narratives_allowed": false,
+    "pii_allowed": false,
+    "subject_label_pairs_retained": false,
+    "raw_values_retained": false,
+    "subject_hashing": {
+      "algorithm": "HMAC-SHA256_example",
+      "salt_source": "environment_secret_not_included_in_manifest",
+      "salt_retained_in_manifest": false,
+      "namespace": "muleguard.ml.manifest.example",
+      "one_way": true,
+      "pseudonymous": true,
+      "reversible": false
+    },
+    "pii_detection": {
+      "status": "not_executed_in_example",
+      "raw_hits_retained": false,
+      "detector_categories": [
+        "email_like",
+        "phone_like",
+        "pan_like",
+        "aadhaar_like",
+        "upi_like",
+        "ipv4_like",
+        "ifsc_like",
+        "card_like",
+        "secret_assignment_like",
+        "free_text_like"
+      ]
+    },
+    "data_minimization": {
+      "aggregate_features_preferred": true,
+      "bounded_cardinality": true,
+      "bounded_summary_items": true,
+      "no_raw_exports": true
+    },
+    "retention": {
+      "process_local_only": true,
+      "durable_storage_allowed": false,
+      "repository_storage_allowed": false,
+      "backup_allowed": false,
+      "legal_hold_supported": false,
+      "retention_policy": "discard_on_process_exit_for_prototype"
+    }
+  },
+  "leakage": {
+    "labels_as_features_policy": "reject",
+    "ground_truth_fields_policy": "reject",
+    "fraud_label_fields_policy": "reject",
+    "scenario_id_fields_policy": "reject",
+    "fraud_ring_id_fields_policy": "reject",
+    "raw_narrative_fields_policy": "reject",
+    "raw_identifier_fields_policy": "reject",
+    "target_copy_detection": {
+      "enabled_in_policy": true,
+      "status": "not_executed_in_example",
+      "raw_values_retained": false,
+      "high_match_threshold": 0.98
+    },
+    "detected_conditions": {
+      "labels_used_as_features": false,
+      "ground_truth_fields_detected": false,
+      "fraud_label_fields_detected": false,
+      "scenario_id_fields_detected": false,
+      "fraud_ring_id_fields_detected": false,
+      "raw_narrative_fields_detected": false,
+      "raw_identifier_fields_detected": false
+    },
+    "forbidden_feature_fields": [
+      "ground_truth",
+      "ground_truth_label",
+      "truth_label",
+      "fraud_label",
+      "is_fraud",
+      "label",
+      "label_code",
+      "target",
+      "y",
+      "synthetic_label",
+      "scenario_id",
+      "ring_id",
+      "fraud_ring_id",
+      "narrative",
+      "narrative_raw",
+      "narrative_normalized",
+      "raw_identifier",
+      "identifier_raw",
+      "account_id",
+      "customer_id",
+      "upi_id",
+      "phone_number",
+      "email_address",
+      "ip_address",
+      "ifsc",
+      "pan",
+      "card_number",
+      "password",
+      "passwd",
+      "secret",
+      "token",
+      "api_key",
+      "private_key",
+      "database_url",
+      "model_path",
+      "artifact_path"
+    ]
+  },
+  "security": {
+    "secrets_in_manifest": false,
+    "tokens_in_manifest": false,
+    "passwords_in_manifest": false,
+    "private_keys_in_manifest": false,
+    "database_urls_in_manifest": false,
+    "filesystem_paths_in_manifest": false,
+    "production_endpoints_in_manifest": false,
+    "artifact_signature": {
+      "status": "not_applicable_in_example",
+      "signed": false,
+      "signature_retained": false,
+      "public_key_reference_retained": false,
+      "certificate_path_retained": false
+    },
+    "supply_chain": {
+      "pickle_deserialization_allowed": false,
+      "joblib_deserialization_allowed": false,
+      "arbitrary_code_execution_allowed": false,
+      "custom_object_loading_allowed": false,
+      "dependency_pin_required": true,
+      "sbom_required_before_real_deployment": true
+    },
+    "access_control": {
+      "process_local_only": true,
+      "production_registry_required_for_durable_artifacts": true,
+      "role_based_access_control_required_before_real_deployment": true,
+      "audit_logging_required_before_real_deployment": true
+    },
+    "adversarial_testing": {
+      "status": "required_before_real_deployment",
+      "executed_in_example": false,
+      "raw_payloads_retained": false
+    }
+  },
+  "governance": {
+    "model_card_required": true,
+    "datasheet_required": true,
+    "manifest_required_for_real_models": true,
+    "approval_workflow_example": {
+      "developer": "required",
+      "ml_governance": "required_before_promotion",
+      "privacy": "required_before_real_data_use",
+      "security": "required_before_production",
+      "legal": "required_before_consequential_use",
+      "business_owner": "required_before_production"
+    },
+    "change_control": {
+      "versioning_required": true,
+      "backward_compatibility_review_required": true,
+      "breaking_change_policy": "major_version_increment_with_migration_notes",
+      "retirement_review_required": true
+    },
+    "documentation": {
+      "intended_use_documented": true,
+      "limitations_documented": true,
+      "ethical_considerations_documented": true,
+      "performance_metrics_documented": "required_before_real_deployment",
+      "training_data_documented": "required_before_real_deployment",
+      "evaluation_documented": "required_before_real_deployment"
+    }
+  },
+  "monitoring": {
+    "required_before_real_deployment": true,
+    "metrics_to_monitor": [
+      "score_distribution_drift",
+      "feature_missing_rate",
+      "feature_distribution_drift",
+      "prediction_volume",
+      "review_queue_volume",
+      "human_disposition_agreement",
+      "false_positive_feedback",
+      "false_negative_feedback",
+      "latency",
+      "error_rate",
+      "governance_check_failures"
+    ],
+    "drift_thresholds": {
+      "warn": 0.1,
+      "fail": 0.25,
+      "method": "summary_based_approximation_example"
+    },
+    "alerting": {
+      "automatic_adverse_action_allowed": false,
+      "human_review_queue_only": true,
+      "security_alerting_required_for_privacy_or_leakage_failures": true
+    },
+    "dashboard_requirements": [
+      "no_raw_customer_data",
+      "no_raw_narratives",
+      "no_raw_identifiers",
+      "no_subject_label_pairs",
+      "aggregate_metrics_only"
+    ]
+  },
+  "incident_response": {
+    "required_before_real_deployment": true,
+    "quarantine_action": "mark_process_local_model_entry_as_BLOCKED_or_RETIRED",
+    "rollback_action": "retire_current_entry_and_activate_previous_approved_process_local_entry_example",
+    "customer_harm_prevention": {
+      "automatic_adverse_action_allowed": false,
+      "manual_review_required_for_any_consequential_action": true
+    },
+    "notification_roles": [
+      "ml_governance",
+      "privacy",
+      "security",
+      "legal_if_required",
+      "operations",
+      "business_owner"
+    ],
+    "evidence_retention": {
+      "raw_values_retained": false,
+      "subject_label_pairs_retained": false,
+      "safe_metadata_only": true,
+      "durable_incident_registry_required_for_real_incidents": true
+    }
+  },
+  "reproducibility": {
+    "deterministic": true,
+    "seed": 42,
+    "environment_fingerprint": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210",
+    "code_revision_fingerprint": "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
+    "container_image_digest": null,
+    "dependency_lock_required": true,
+    "randomness_policy": "deterministic_hmac_based_example",
+    "stable_sorting_required": true,
+    "clock_sensitivity": "metadata_timestamps_only",
+    "raw_training_data_replay_allowed": false
+  },
+  "compatibility": {
+    "python": ">=3.11,<3.14",
+    "backend_framework": "fastapi_example",
+    "ml_modules": [
+      "app.ml.model_service",
+      "app.ml.train_model",
+      "app.ml.evaluate",
+      "app.ml.explainability",
+      "app.ml.validation"
+    ],
+    "schema_version": "v1",
+    "backward_compatible": true,
+    "breaking_change_policy": "major_version_increment",
+    "deprecated_fields": [],
+    "future_durable_registry_contract": "required_before_production_artifact_storage"
+  },
+  "lifecycle": {
+    "supported_states": [
+      "DRAFT",
+      "TRAINED",
+      "EVALUATED",
+      "CANDIDATE",
+      "ACTIVE",
+      "RETIRED",
+      "BLOCKED",
+      "FAILED",
+      "EXAMPLE_ONLY"
+    ],
+    "current_state": "EXAMPLE_ONLY",
+    "promotion_to_active_allowed": false,
+    "promotion_to_production_allowed": false,
+    "retirement_policy": "process_local_metadata_only_in_prototype",
+    "durable_lifecycle_registry_required_for_production": true
+  },
+  "audit": {
+    "backend": "process_local_in_memory_example",
+    "durable": false,
+    "distributed": false,
+    "events": [
+      {
+        "action": "manifest_example_created",
+        "actor": "documentation_generator",
+        "status": "EXAMPLE_ONLY",
+        "details": {
+          "raw_values_retained": false,
+          "subject_label_pairs_retained": false,
+          "secrets_retained": false
+        }
+      }
+    ],
+    "required_for_real_models": [
+      "training_started",
+      "training_completed",
+      "training_failed",
+      "evaluation_completed",
+      "governance_check_passed",
+      "governance_check_failed",
+      "promotion_requested",
+      "promotion_approved",
+      "promotion_blocked",
+      "retirement_requested",
+      "retirement_completed",
+      "incident_quarantine",
+      "rollback_completed"
+    ]
+  },
+  "changelog": [
+    {
+      "version": "v1",
+      "date": "2026-10-20",
+      "change": "Initial inert synthetic-first model manifest example for MULEGUARD ML artifact boundary documentation."
+    }
+  ],
+  "sentinel": "muleguard.ml.artifacts.model_manifest.example:v1:inert-synthetic-first-privacy-leakage-aware-boundary-manifest"
+}

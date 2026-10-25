@@ -1,0 +1,288 @@
+# =============================================================================
+# MULEGUARD Docker Compose
+# -----------------------------------------------------------------------------
+# Services:
+#   - db:       PostgreSQL source of truth
+#   - backend:  FastAPI application, migrations, seeding, APIs, analysis
+#   - frontend: React SPA served by Nginx, proxying /api to backend
+#
+# Security defaults:
+#   - PostgreSQL is not exposed to the host by default.
+#   - Frontend cannot reach PostgreSQL directly.
+#   - Backend sits between frontend and database.
+#   - Secrets must be provided through .env.
+#   - Log rotation is enabled.
+#   - Containers drop privilege escalation via no-new-privileges.
+#
+# Before running:
+#   cp .env.example .env
+#   # then set BACKEND_SECRET_KEY, POSTGRES_PASSWORD, and dev passwords
+#
+# Run:
+#   docker compose up --build
+#
+# Destructive reset:
+#   docker compose down -v
+# =============================================================================
+
+name: "${COMPOSE_PROJECT_NAME:-muleguard}"
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+x-labels: &default-labels
+  project: "muleguard"
+  environment: "${BACKEND_ENV:-local}"
+  data-classification: "synthetic"
+  maintainers: "muleguard-contributors"
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL
+  # ---------------------------------------------------------------------------
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    labels:
+      <<: *default-labels
+      service: "db"
+    environment:
+      TZ: "${TZ:-UTC}"
+      PGTZ: "${PGTZ:-UTC}"
+      PGDATA: /var/lib/postgresql/data/pgdata
+
+      POSTGRES_DB: "${POSTGRES_DB:-muleguard}"
+      POSTGRES_USER: "${POSTGRES_USER:-muleguard}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}"
+
+      # Stronger password authentication for local Postgres.
+      POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --auth-host=scram-sha-256 --auth-local=scram-sha-256"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - backend
+    expose:
+      - "5432"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    logging: *default-logging
+    security_opt:
+      - no-new-privileges:true
+    shm_size: "128mb"
+    stop_grace_period: 30s
+
+  # ---------------------------------------------------------------------------
+  # FastAPI backend
+  # ---------------------------------------------------------------------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        PYTHON_VERSION: "${PYTHON_VERSION:-3.11}"
+    image: muleguard/backend:latest
+    restart: unless-stopped
+    init: true
+    labels:
+      <<: *default-labels
+      service: "backend"
+    env_file:
+      - .env
+    environment:
+      # Runtime mode.
+      BACKEND_ENV: "${BACKEND_ENV:-local}"
+      BACKEND_DEBUG: "${BACKEND_DEBUG:-false}"
+      BACKEND_HOST: 0.0.0.0
+      BACKEND_PORT: "8000"
+      BACKEND_PUBLIC_URL: "${BACKEND_PUBLIC_URL:-http://localhost:8000}"
+      FRONTEND_PUBLIC_URL: "${FRONTEND_PUBLIC_URL:-http://localhost:8080}"
+
+      # Python runtime behaviour.
+      PYTHONUNBUFFERED: "1"
+      PYTHONDONTWRITEBYTECODE: "1"
+
+      # Security.
+      BACKEND_SECRET_KEY: "${BACKEND_SECRET_KEY:?BACKEND_SECRET_KEY must be set in .env}"
+      BACKEND_ALLOWED_HOSTS: "${BACKEND_ALLOWED_HOSTS:-localhost,127.0.0.1,backend}"
+      BACKEND_CORS_ORIGINS: "${BACKEND_CORS_ORIGINS:-http://localhost:5173,http://localhost:4173,http://localhost:8080}"
+      BACKEND_TRUST_PROXY_HEADERS: "${BACKEND_TRUST_PROXY_HEADERS:-false}"
+      BACKEND_OPENAPI_ENABLED: "${BACKEND_OPENAPI_ENABLED:-true}"
+      BACKEND_DOCS_ENABLED: "${BACKEND_DOCS_ENABLED:-true}"
+
+      # Database connection.
+      # The database host is the Compose service name: db
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: "${POSTGRES_DB:-muleguard}"
+      POSTGRES_USER: "${POSTGRES_USER:-muleguard}"
+      DATABASE_URL: "postgresql+psycopg2://${POSTGRES_USER:-muleguard}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}@db:5432/${POSTGRES_DB:-muleguard}"
+
+      # Migrations and bootstrap.
+      ALEMBIC_UPGRADE_ON_START: "${ALEMBIC_UPGRADE_ON_START:-true}"
+      ALEMBIC_SEED_REFERENCE_DATA: "${ALEMBIC_SEED_REFERENCE_DATA:-true}"
+
+      # Local synthetic demo seeding.
+      # These defaults are for local synthetic demo use only.
+      # Disable for production-like environments.
+      SEED_DEV_USERS: "${SEED_DEV_USERS:-true}"
+      SEED_DEMO_DATA: "${SEED_DEMO_DATA:-true}"
+      SEED_RANDOM_SEED: "${SEED_RANDOM_SEED:-42}"
+      SEED_RESET_REQUIRE_CONFIRMATION: "${SEED_RESET_REQUIRE_CONFIRMATION:-false}"
+      SEED_ACCOUNTS: "${SEED_ACCOUNTS:-1200}"
+      SEED_TRANSACTIONS: "${SEED_TRANSACTIONS:-25000}"
+      SEED_COMPLAINTS: "${SEED_COMPLAINTS:-150}"
+      SEED_ENTITY_LINKS: "${SEED_ENTITY_LINKS:-400}"
+      SEED_FRAUD_SCENARIOS: "${SEED_FRAUD_SCENARIOS:-12}"
+
+      # ML configuration.
+      ML_ARTIFACT_DIR: "${ML_ARTIFACT_DIR:-/app/app/ml/artifacts}"
+      ML_ACTIVE_SCORING_MODE: "${ML_ACTIVE_SCORING_MODE:-auto}"
+      ML_FALLBACK_MODE_LABEL: "${ML_FALLBACK_MODE_LABEL:-heuristic_fallback}"
+      ML_REQUIRE_TRAINED_MODEL: "${ML_REQUIRE_TRAINED_MODEL:-false}"
+
+      # Report generation.
+      REPORT_ENABLED: "${REPORT_ENABLED:-true}"
+      REPORT_TIMEZONE: "${REPORT_TIMEZONE:-UTC}"
+
+      TZ: "${TZ:-UTC}"
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    expose:
+      - "8000"
+    networks:
+      - edge
+      - backend
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request, sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3).status == 200 else 1)"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+    logging: *default-logging
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp
+    stop_grace_period: 20s
+    # Optional local-development mounts.
+    # Uncomment only for development, not for production-like deployment.
+    #
+    # volumes:
+    #   - ./backend:/app
+    #   - backend_ml_artifacts:/app/app/ml/artifacts
+
+  # ---------------------------------------------------------------------------
+  # React frontend served by Nginx
+  # ---------------------------------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NODE_ENV: production
+        VITE_API_BASE_URL: "${VITE_API_BASE_URL:-/api/v1}"
+        VITE_APP_NAME: "${VITE_APP_NAME:-MULEGUARD}"
+        VITE_ENVIRONMENT_LABEL: "${VITE_ENVIRONMENT_LABEL:-DOCKER SYNTHETIC DEMO}"
+        VITE_SHOW_SYNTHETIC_BANNER: "${VITE_SHOW_SYNTHETIC_BANNER:-true}"
+        VITE_SHOW_SCORE_DISCLAIMER: "${VITE_SHOW_SCORE_DISCLAIMER:-true}"
+        VITE_SHOW_LIMITATIONS: "${VITE_SHOW_LIMITATIONS:-true}"
+        VITE_DEFAULT_CURRENCY: "${VITE_DEFAULT_CURRENCY:-INR}"
+        VITE_TIMEZONE: "${VITE_TIMEZONE:-UTC}"
+        VITE_DEFAULT_LOCALE: "${VITE_DEFAULT_LOCALE:-en}"
+    image: muleguard/frontend:latest
+    restart: unless-stopped
+    labels:
+      <<: *default-labels
+      service: "frontend"
+    environment:
+      TZ: "${TZ:-UTC}"
+      NGINX_ENTRYPOINT_QUIET_LOGS: "1"
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+    expose:
+      - "80"
+    networks:
+      - edge
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--spider",
+          "-q",
+          "http://127.0.0.1/"
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+    logging: *default-logging
+    security_opt:
+      - no-new-privileges:true
+    stop_grace_period: 15s
+
+# -----------------------------------------------------------------------------
+# Networks
+# -----------------------------------------------------------------------------
+# edge:
+#   frontend <-> backend communication
+#
+# backend:
+#   backend <-> database communication
+#   internal: true prevents this network from having external internet access
+# -----------------------------------------------------------------------------
+networks:
+  edge:
+    name: muleguard-edge
+    labels:
+      project: "muleguard"
+      visibility: "edge"
+  backend:
+    name: muleguard-backend
+    internal: true
+    labels:
+      project: "muleguard"
+      visibility: "internal"
+
+# -----------------------------------------------------------------------------
+# Volumes
+# -----------------------------------------------------------------------------
+volumes:
+  pgdata:
+    name: muleguard_pgdata
+    labels:
+      project: "muleguard"
+      data: "synthetic-demo-database"
+
+  # Optional persisted ML artifact volume.
+  # Uncomment if you want trained artifacts to survive container rebuilds.
+  #
+  # backend_ml_artifacts:
+  #   name: muleguard_backend_ml_artifacts
+  #   labels:
+  #     project: "muleguard"
+  #     data: "local-model-artifacts"

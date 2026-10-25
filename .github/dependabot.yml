@@ -1,0 +1,327 @@
+# =============================================================================
+# MULEGUARD Dependabot configuration
+# -----------------------------------------------------------------------------
+# Keeps the following dependency ecosystems current:
+#   - Python backend dependencies in /backend
+#   - Node.js frontend dependencies in /frontend
+#   - Docker base images used by /backend and /frontend Dockerfiles
+#   - GitHub Actions workflows
+#
+# Security notes:
+#   - This file handles version-update automation.
+#   - Dependabot security alerts/security updates must also be enabled in
+#     GitHub repository settings.
+#   - Replace @your-org/* reviewers with real GitHub teams or usernames.
+#   - Do not put secrets in this file.
+# =============================================================================
+
+version: 2
+
+# Optional:
+# If MULEGUARD ever uses private package registries, define them here.
+# Never hardcode credentials. Use GitHub Secrets where supported.
+#
+# registries:
+#   python-private-index:
+#     type: python-index
+#     url: https://example.com/simple
+#     username: ${{ secrets.PRIVATE_PYTHON_INDEX_USERNAME }}
+#     password: ${{ secrets.PRIVATE_PYTHON_INDEX_PASSWORD }}
+#
+#   npm-private-registry:
+#     type: npm-registry
+#     url: https://npm.example.com
+#     token: ${{ secrets.PRIVATE_NPM_REGISTRY_TOKEN }}
+
+updates:
+  # ---------------------------------------------------------------------------
+  # Python backend dependencies
+  # ---------------------------------------------------------------------------
+  - package-ecosystem: "pip"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
+
+    open-pull-requests-limit: 10
+    rebase-strategy: "auto"
+    versioning-strategy: "auto"
+
+    reviewers:
+      - "your-org/backend-team"
+      - "your-org/security-team"
+
+    labels:
+      - "dependencies"
+      - "backend"
+      - "python"
+      - "review-required"
+
+    commit-message:
+      prefix: "build"
+      prefix-development: "build"
+      include: "scope"
+
+    # Keep version-update noise focused on direct dependencies.
+    # Security alerts still cover transitive dependencies when enabled.
+    allow:
+      - dependency-type: "direct"
+
+    # Group non-major updates by functional area.
+    # Major updates remain separate so breaking changes get careful review.
+    groups:
+      backend-api-non-major:
+        patterns:
+          - "fastapi"
+          - "pydantic*"
+          - "uvicorn*"
+          - "sqlalchemy"
+          - "alembic"
+          - "psycopg2*"
+          - "greenlet"
+        update-types:
+          - "minor"
+          - "patch"
+
+      backend-data-ml-non-major:
+        patterns:
+          - "numpy"
+          - "pandas"
+          - "scipy"
+          - "scikit-learn"
+          - "shap"
+        update-types:
+          - "minor"
+          - "patch"
+
+      backend-graph-report-non-major:
+        patterns:
+          - "networkx"
+          - "reportlab"
+        update-types:
+          - "minor"
+          - "patch"
+
+      backend-security-auth-non-major:
+        patterns:
+          - "argon2*"
+          - "bcrypt"
+          - "passlib"
+          - "pyjwt"
+          - "python-jose"
+          - "cryptography"
+        update-types:
+          - "minor"
+          - "patch"
+
+      backend-testing-quality-non-major:
+        patterns:
+          - "pytest*"
+          - "coverage"
+          - "ruff*"
+          - "mypy*"
+          - "types-*"
+          - "httpx"
+        update-types:
+          - "minor"
+          - "patch"
+
+      backend-other-non-major:
+        update-types:
+          - "minor"
+          - "patch"
+
+  # ---------------------------------------------------------------------------
+  # Node.js / React frontend dependencies
+  # ---------------------------------------------------------------------------
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:30"
+      timezone: "UTC"
+
+    open-pull-requests-limit: 10
+    rebase-strategy: "auto"
+    versioning-strategy: "auto"
+
+    reviewers:
+      - "your-org/frontend-team"
+      - "your-org/security-team"
+
+    labels:
+      - "dependencies"
+      - "frontend"
+      - "javascript"
+      - "typescript"
+      - "review-required"
+
+    commit-message:
+      prefix: "build"
+      prefix-development: "build"
+      include: "scope"
+
+    allow:
+      - dependency-type: "direct"
+
+    # Group non-major frontend updates by purpose.
+    # Major updates remain separate because they may require UI/API migration.
+    groups:
+      frontend-react-runtime-non-major:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "react-router*"
+          - "@tanstack/*"
+        update-types:
+          - "minor"
+          - "patch"
+
+      frontend-build-tooling-non-major:
+        patterns:
+          - "vite"
+          - "@vitejs/*"
+          - "typescript"
+          - "rollup*"
+          - "esbuild*"
+        update-types:
+          - "minor"
+          - "patch"
+
+      frontend-lint-format-non-major:
+        patterns:
+          - "eslint*"
+          - "@typescript-eslint/*"
+          - "prettier*"
+          - "stylelint*"
+        update-types:
+          - "minor"
+          - "patch"
+
+      frontend-testing-non-major:
+        patterns:
+          - "vitest*"
+          - "@testing-library/*"
+          - "jsdom"
+          - "happy-dom"
+        update-types:
+          - "minor"
+          - "patch"
+
+      frontend-styling-non-major:
+        patterns:
+          - "tailwindcss*"
+          - "postcss*"
+          - "autoprefixer"
+        update-types:
+          - "minor"
+          - "patch"
+
+      frontend-other-non-major:
+        update-types:
+          - "minor"
+          - "patch"
+
+  # ---------------------------------------------------------------------------
+  # GitHub Actions
+  # ---------------------------------------------------------------------------
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "07:00"
+      timezone: "UTC"
+
+    open-pull-requests-limit: 5
+    rebase-strategy: "auto"
+
+    reviewers:
+      - "your-org/devops-team"
+      - "your-org/security-team"
+
+    labels:
+      - "dependencies"
+      - "ci"
+      - "github-actions"
+      - "security-review"
+
+    commit-message:
+      prefix: "ci"
+      prefix-development: "ci"
+      include: "scope"
+
+    groups:
+      github-actions-non-major:
+        update-types:
+          - "minor"
+          - "patch"
+
+  # ---------------------------------------------------------------------------
+  # Backend Docker base image
+  # ---------------------------------------------------------------------------
+  - package-ecosystem: "docker"
+    directory: "/backend"
+    schedule:
+      interval: "monthly"
+      timezone: "UTC"
+
+    open-pull-requests-limit: 5
+    rebase-strategy: "auto"
+
+    reviewers:
+      - "your-org/devops-team"
+      - "your-org/backend-team"
+      - "your-org/security-team"
+
+    labels:
+      - "dependencies"
+      - "docker"
+      - "backend"
+      - "security-review"
+
+    commit-message:
+      prefix: "build"
+      include: "scope"
+
+    groups:
+      backend-docker-non-major:
+        update-types:
+          - "minor"
+          - "patch"
+
+  # ---------------------------------------------------------------------------
+  # Frontend Docker base image
+  # ---------------------------------------------------------------------------
+  - package-ecosystem: "docker"
+    directory: "/frontend"
+    schedule:
+      interval: "monthly"
+      timezone: "UTC"
+
+    open-pull-requests-limit: 5
+    rebase-strategy: "auto"
+
+    reviewers:
+      - "your-org/devops-team"
+      - "your-org/frontend-team"
+      - "your-org/security-team"
+
+    labels:
+      - "dependencies"
+      - "docker"
+      - "frontend"
+      - "security-review"
+
+    commit-message:
+      prefix: "build"
+      include: "scope"
+
+    groups:
+      frontend-docker-non-major:
+        update-types:
+          - "minor"
+          - "patch"

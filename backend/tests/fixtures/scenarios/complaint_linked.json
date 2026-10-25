@@ -1,0 +1,22 @@
+{
+  "id": "complaint_linked",
+  "label": "Account named in multiple complaints",
+  "description": "An account named as the suspected beneficiary in several independent cybercrime complaints. The strongest signal the platform holds, because it comes from outside the transaction data: a complaint is a person reporting a loss, not a pattern inferred from a ledger.",
+  "parameters": {
+    "complaints": 3,
+    "match_tier": 1,
+    "days_apart": 1
+  },
+  "expected": {
+    "rule_codes": ["COMPLAINT_LINKED", "REPEAT_COMPLAINT_SUBJECT"],
+    "min_risk_band": "CRITICAL",
+    "ground_truth_label": true,
+    "scenario_type": "complaint_linked"
+  },
+  "confounders": [
+    "A large merchant will accumulate complaints simply by having many customers, some of whom dispute charges. Complaint count has to be read against transaction volume.",
+    "A single incident reported by several victims is several complaints about one event, not several events.",
+    "A misattributed complaint: the victim names the account they can see, which may be an intermediary rather than the beneficiary."
+  ],
+  "notes": "These correlations are tier 1, meaning the complaint named the account directly. That is an identity match and carries no confidence score, because it is not a probabilistic claim — the reference either matches or it does not. Tiers 3 to 5 are inferences and do carry confidence plus a review state. Conflating the two is the single most consequential presentation error in this part of the product: an inferred link shown as certain is how an investigation ends up aimed at the wrong person."
+}

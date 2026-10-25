@@ -1,0 +1,551 @@
+# =============================================================================
+# MULEGUARD CI
+# -----------------------------------------------------------------------------
+# Goals:
+#   - Validate backend tests, linting, migrations, and coverage
+#   - Validate frontend TypeScript, tests, and production build
+#   - Validate JSON schemas and synthetic sample payloads
+#   - Validate Docker Compose configuration and backend container smoke path
+#   - Run dependency and secret hygiene checks
+#   - Run CodeQL security analysis
+#   - Avoid secrets, live external services, and non-deterministic dependencies
+#
+# Notes:
+#   - CI-only dummy secrets are intentionally obviously non-production.
+#   - Replace branch names if your default branches differ.
+#   - This workflow assumes the repository contains:
+#       backend/requirements-dev.txt
+#       frontend/package-lock.json
+#       docker-compose.yml
+#       data/schemas/*.schema.json
+#       data/samples/*.json
+#       scripts/check_schemas.py or equivalent schema validation logic
+# =============================================================================
+
+name: MULEGUARD CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - develop
+  pull_request:
+    branches:
+      - main
+      - master
+      - develop
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CI: "true"
+  PYTHON_VERSION: "3.11"
+  NODE_VERSION: "20"
+  POSTGRES_VERSION: "16"
+  TZ: "UTC"
+  PYTHONUNBUFFERED: "1"
+  PYTHONDONTWRITEBYTECODE: "1"
+  COMPOSE_DOCKER_CLI_BUILD: "1"
+  DOCKER_BUILDKIT: "1"
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Backend: lint, typecheck advisory, migrations, tests, coverage
+  # ---------------------------------------------------------------------------
+  backend:
+    name: Backend tests and checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: muleguard_ci
+          POSTGRES_USER: muleguard
+          POSTGRES_PASSWORD: muleguard_ci_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U muleguard -d muleguard_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql+psycopg2://muleguard:muleguard_ci_password@localhost:5432/muleguard_ci
+      BACKEND_ENV: ci
+      BACKEND_DEBUG: "false"
+      BACKEND_SECRET_KEY: "ci-only-secret-do-not-use-in-production-0123456789abcdef"
+      BACKEND_LOG_LEVEL: INFO
+      BACKEND_LOG_JSON: "false"
+      BACKEND_OPENAPI_ENABLED: "true"
+      BACKEND_DOCS_ENABLED: "true"
+      BACKEND_CORS_ORIGINS: "http://localhost:5173,http://localhost:4173,http://localhost:8080"
+      AUTH_ENABLED: "true"
+      SEED_DEV_USERS: "false"
+      SEED_DEMO_DATA: "false"
+      ALEMBIC_UPGRADE_ON_START: "true"
+      ML_REQUIRE_TRAINED_MODEL: "false"
+      ML_ACTIVE_SCORING_MODE: "heuristic_fallback"
+      REPORT_ENABLED: "true"
+      GRAPH_ENABLED: "true"
+      RULES_ENABLED: "true"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-dev.txt
+
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      - name: Install backend dependencies
+        run: pip install -r backend/requirements-dev.txt
+
+      - name: Lint backend with Ruff
+        run: |
+          cd backend
+          ruff check app tests
+
+      - name: Check backend formatting with Ruff
+        run: |
+          cd backend
+          ruff format --check app tests
+
+      - name: Type-check backend with MyPy
+        run: |
+          cd backend
+          mypy app
+        continue-on-error: true
+
+      - name: Apply Alembic migrations from empty CI database
+        run: |
+          cd backend
+          alembic upgrade head
+
+      - name: Run backend tests with coverage
+        run: |
+          cd backend
+          pytest -q \
+            --cov=app \
+            --cov-report=xml \
+            --cov-report=term-missing \
+            --maxfail=25
+
+      - name: Upload backend coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: backend/coverage.xml
+          retention-days: 14
+
+  # ---------------------------------------------------------------------------
+  # Frontend: install, lint, test, typecheck, production build
+  # ---------------------------------------------------------------------------
+  frontend:
+    name: Frontend checks and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      NODE_ENV: test
+      VITE_API_BASE_URL: /api/v1
+      VITE_APP_NAME: MULEGUARD
+      VITE_ENVIRONMENT_LABEL: CI SYNTHETIC DEMO
+      VITE_SHOW_SYNTHETIC_BANNER: "true"
+      VITE_SHOW_SCORE_DISCLAIMER: "true"
+      VITE_SHOW_LIMITATIONS: "true"
+      VITE_DEFAULT_CURRENCY: INR
+      VITE_TIMEZONE: UTC
+      VITE_DEFAULT_LOCALE: en
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Lint frontend
+        working-directory: frontend
+        run: npm run lint --if-present
+
+      - name: Audit frontend dependencies
+        working-directory: frontend
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+      - name: Run frontend unit/component tests
+        working-directory: frontend
+        run: npm run test --if-present
+
+      - name: Type-check frontend
+        working-directory: frontend
+        run: npm run typecheck
+
+      - name: Build frontend production bundle
+        working-directory: frontend
+        run: npm run build
+
+      - name: Upload frontend build artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
+          retention-days: 7
+
+  # ---------------------------------------------------------------------------
+  # Data schemas and synthetic sample validation
+  # ---------------------------------------------------------------------------
+  data-contracts:
+    name: Data schema and sample validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install schema validation dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install jsonschema
+
+      - name: Validate JSON schemas and sample payloads
+        run: |
+          if [ -f scripts/check_schemas.py ]; then
+            python scripts/check_schemas.py
+          else
+            python - <<'PY'
+          import json
+          import pathlib
+          import sys
+          from jsonschema import Draft202012Validator
+
+          errors = []
+
+          schema_dir = pathlib.Path("data/schemas")
+          sample_dir = pathlib.Path("data/samples")
+
+          if not schema_dir.exists():
+              errors.append("Missing required directory: data/schemas")
+          if not sample_dir.exists():
+              errors.append("Missing required directory: data/samples")
+
+          if schema_dir.exists():
+              for schema_path in sorted(schema_dir.glob("*.schema.json")):
+                  try:
+                      schema = json.loads(schema_path.read_text(encoding="utf-8"))
+                  except Exception as exc:
+                      errors.append(f"{schema_path}: invalid JSON: {exc}")
+                      continue
+
+                  try:
+                      Draft202012Validator.check_schema(schema)
+                  except Exception as exc:
+                      errors.append(f"{schema_path}: invalid JSON Schema: {exc}")
+
+          if sample_dir.exists():
+              for sample_path in sorted(sample_dir.glob("*.json")):
+                  try:
+                      json.loads(sample_path.read_text(encoding="utf-8"))
+                  except Exception as exc:
+                      errors.append(f"{sample_path}: invalid JSON: {exc}")
+
+          if errors:
+              print("Schema/sample validation failed:", file=sys.stderr)
+              for error in errors:
+                  print(f" - {error}", file=sys.stderr)
+              sys.exit(1)
+
+          print("Schema/sample validation passed.")
+          PY
+          fi
+
+  # ---------------------------------------------------------------------------
+  # Docker Compose validation and backend container smoke test
+  # ---------------------------------------------------------------------------
+  docker:
+    name: Docker build and backend smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      COMPOSE_FILE: docker-compose.yml
+      COMPOSE_PROJECT_NAME: muleguard-ci
+      POSTGRES_PASSWORD: "ci-postgres-password"
+      BACKEND_SECRET_KEY: "ci-docker-secret-do-not-use-in-production-0123456789abcdef"
+      BACKEND_ENV: local
+      BACKEND_DEBUG: "false"
+      SEED_DEV_USERS: "false"
+      SEED_DEMO_DATA: "false"
+      ALEMBIC_UPGRADE_ON_START: "true"
+      ML_REQUIRE_TRAINED_MODEL: "false"
+      ML_ACTIVE_SCORING_MODE: "heuristic_fallback"
+      REPORT_ENABLED: "true"
+      GRAPH_ENABLED: "true"
+      RULES_ENABLED: "true"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Validate Docker Compose configuration
+        run: docker compose config --quiet
+
+      - name: Build backend image
+        run: docker compose build backend
+
+      - name: Build frontend image
+        run: docker compose build frontend
+
+      - name: Start PostgreSQL and backend for smoke test
+        run: docker compose up -d --wait db backend
+
+      - name: Show Docker Compose status
+        if: always()
+        run: docker compose ps
+
+      - name: Smoke-test backend health endpoint
+        run: |
+          curl --fail --silent --show-error http://localhost:8000/health | python -m json.tool
+
+      - name: Smoke-test OpenAPI document availability
+        run: |
+          curl --fail --silent --show-error http://localhost:8000/api/v1/openapi.json > /dev/null
+          echo "OpenAPI document is reachable."
+
+      - name: Show backend and database logs
+        if: always()
+        run: docker compose logs --tail=300 backend db
+
+      - name: Stop and remove Docker Compose resources
+        if: always()
+        run: docker compose down -v --remove-orphans
+
+  # ---------------------------------------------------------------------------
+  # Dependency audit and basic secret hygiene
+  # ---------------------------------------------------------------------------
+  security-audit:
+    name: Dependency and secret audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Python audit tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install pip-audit
+
+      - name: Audit Python dependencies
+        run: |
+          pip-audit \
+            -r backend/requirements.txt \
+            -r backend/requirements-dev.txt \
+            --format json \
+            --output pip-audit.json
+        continue-on-error: true
+
+      - name: Upload Python dependency audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pip-audit-report
+          path: pip-audit.json
+          retention-days: 14
+          if-no-files-found: warn
+
+      - name: Scan for obvious committed secrets
+        run: |
+          python - <<'PY'
+          import pathlib
+          import re
+          import sys
+
+          root = pathlib.Path(".")
+
+          excluded_dirs = {
+              ".git",
+              "node_modules",
+              "dist",
+              "build",
+              ".venv",
+              "venv",
+              "env",
+              "__pycache__",
+              ".pytest_cache",
+              ".mypy_cache",
+              ".ruff_cache",
+              "coverage",
+              "htmlcov",
+              "data/generated",
+              "data/imports",
+              "backend/app/ml/artifacts",
+              "reports",
+              "logs",
+              "tmp",
+              "temp",
+          }
+
+          excluded_files = {
+              ".env.example",
+              "ci.yml",
+          }
+
+          binary_suffixes = {
+              ".png", ".jpg", ".jpeg", ".gif", ".webp", ".avif", ".ico",
+              ".pdf", ".zip", ".gz", ".tar", ".bz2", ".7z", ".rar",
+              ".sqlite", ".sqlite3", ".db", ".joblib", ".pkl", ".pickle",
+              ".onnx", ".pt", ".pth", ".bin", ".woff", ".woff2", ".ttf",
+              ".otf", ".eot", ".mp4", ".mov", ".avi", ".mkv", ".webm",
+          }
+
+          patterns = [
+              re.compile(r"BEGIN [A-Z ]*PRIVATE KEY"),
+              re.compile(r"aws_secret_access_key\s*[:=]\s*[\"'][^\"']{16,}[\"']", re.I),
+              re.compile(r"password\s*[:=]\s*[\"'][^\"']{12,}[\"']", re.I),
+              re.compile(r"secret\s*[:=]\s*[\"'][^\"']{16,}[\"']", re.I),
+              re.compile(r"token\s*[:=]\s*[\"'][A-Za-z0-9_\-\.\+\/=]{20,}[\"']", re.I),
+              re.compile(r"authorization\s*:\s*bearer\s+[A-Za-z0-9_\-\.\+\/=]{20,}", re.I),
+          ]
+
+          hits = []
+
+          for path in root.rglob("*"):
+              if not path.is_file():
+                  continue
+
+              if any(part in excluded_dirs for part in path.parts):
+                  continue
+
+              if path.name in excluded_files:
+                  continue
+
+              if path.suffix.lower() in binary_suffixes:
+                  continue
+
+              try:
+                  text = path.read_text(encoding="utf-8", errors="ignore")
+              except Exception:
+                  continue
+
+              for lineno, line in enumerate(text.splitlines(), start=1):
+                  for pattern in patterns:
+                      if pattern.search(line):
+                          hits.append(f"{path}:{lineno}: possible secret-like value")
+                          break
+
+          if hits:
+              print("Possible secret-like values found:", file=sys.stderr)
+              for hit in hits[:200]:
+                  print(hit, file=sys.stderr)
+              if len(hits) > 200:
+                  print(f"... and {len(hits) - 200} more", file=sys.stderr)
+              sys.exit(1)
+
+          print("No obvious secret-like values found.")
+          PY
+
+  # ---------------------------------------------------------------------------
+  # CodeQL security analysis
+  # ---------------------------------------------------------------------------
+  codeql:
+    name: CodeQL ${{ matrix.language }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language:
+          - python
+          - javascript-typescript
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
+
+  # ---------------------------------------------------------------------------
+  # Pull-request dependency review
+  # ---------------------------------------------------------------------------
+  dependency-review:
+    name: Pull request dependency review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Review dependency changes
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: moderate
+          deny-licenses: GPL-3.0, AGPL-3.0
+          comment-summary-in-pr: always

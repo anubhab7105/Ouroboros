@@ -1,0 +1,182 @@
+# MULEGUARD
+#
+# Two things in here are not the usual boilerplate and are worth reading:
+# the data/ rules and the secrets rules.
+
+
+# -----------------------------------------------------------------------------
+# Secrets
+#
+# Listed first and deliberately broad. A .env file in this repository holds
+# BACKEND_SECRET_KEY and a database password, and a key committed once is a key
+# that has to be rotated -- removing the file in a later commit does not remove
+# it from history. The .example files are the ones that belong here.
+# -----------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+!backend/.env.example
+!frontend/.env.example
+
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+.secrets/
+
+
+# -----------------------------------------------------------------------------
+# Generated and imported data
+#
+# data/generated/ holds generator output, which is reproducible from a seed and
+# a generator version. A committed dataset is a large file that says less than
+# the two values that produced it, and it goes stale against the schema.
+#
+# data/imports/ is a working directory for files on their way in. Keeping it
+# out means a half-fixed file is not sitting next to the checked-in samples
+# waiting to be mistaken for one.
+#
+# data/samples/ and data/schemas/ ARE committed. They are small, explained, and
+# the rejection fixtures are part of the test suite.
+# -----------------------------------------------------------------------------
+data/generated/*
+!data/generated/.gitkeep
+data/imports/*
+!data/imports/.gitkeep
+
+
+# -----------------------------------------------------------------------------
+# Python
+# -----------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+.venv/
+venv/
+env/
+ENV/
+.python-version.local
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.dmypy.json
+dmypy.json
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.hypothesis/
+.tox/
+.nox/
+
+
+# -----------------------------------------------------------------------------
+# Databases
+#
+# A local SQLite file is development state, not source. WAL and shm files come
+# with it because SQLITE_JOURNAL_MODE is WAL.
+# -----------------------------------------------------------------------------
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+
+
+# -----------------------------------------------------------------------------
+# Runtime output
+#
+# These correspond to the VAR_DIR, LOG_DIR, REPORT_OUTPUT_DIR and
+# ML_ARTIFACT_DIR settings. Generated reports in particular: a case report is
+# derived from the database and carries a digest recorded in the audit trail,
+# so the copy that matters is the one that was generated, not a file somebody
+# kept.
+# -----------------------------------------------------------------------------
+backend/var/
+backend/logs/
+*.log
+
+backend/app/ml/artifacts/*
+!backend/app/ml/artifacts/.gitkeep
+!backend/app/ml/artifacts/README.md
+!backend/app/ml/artifacts/model_manifest.example.json
+
+
+# -----------------------------------------------------------------------------
+# Node and frontend
+# -----------------------------------------------------------------------------
+node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/coverage/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# package-lock.json is committed. `npm ci` installs exactly the lockfile, which
+# is the point of having one.
+
+
+# -----------------------------------------------------------------------------
+# Editors and OS
+# -----------------------------------------------------------------------------
+.vscode/*
+!.vscode/settings.json.example
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+
+# -----------------------------------------------------------------------------
+# Rendered diagrams
+#
+# docs/diagrams/ holds .mmd sources, which are text and reviewable in a diff.
+# A rendered SVG or PNG is neither, and goes stale against its source without
+# anybody noticing.
+# -----------------------------------------------------------------------------
+docs/diagrams/*.svg
+docs/diagrams/*.png
+docs/diagrams/*.pdf
+
+
+# -----------------------------------------------------------------------------
+# Scratch
+# -----------------------------------------------------------------------------
+*.bak
+*.orig
+*.rej
+*.tmp
+.scratch/
+scratch/
+tmp/

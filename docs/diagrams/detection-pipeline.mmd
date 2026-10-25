@@ -1,0 +1,35 @@
+%% What happens inside one analysis run, per account.
+%%
+%% The fusion step is the one to read. Each component reports whether it was
+%% available, and an unavailable component changes the weighting rather than
+%% contributing a zero -- a zero would be a claim that the account scored well
+%% on something nothing looked at.
+
+flowchart TB
+    START(["for each selected account"])
+    ASOF["resolve as_of<br/>(default: now)"]
+    SNAP["build feature snapshot<br/>only data strictly before as_of"]
+
+    subgraph signals["Signals, each independently available or not"]
+        R["rules<br/>fan-in, pass-through,<br/>layering, dormancy"]
+        M["model score<br/>trained model, or<br/>heuristic fallback"]
+        G["graph<br/>degree, component size,<br/>shared entities"]
+        C["complaints<br/>correlation count by tier"]
+    end
+
+    FUSE{"fuse"}
+    AVAIL["record which components<br/>were available"]
+    BAND["band the score<br/>LOW / MEDIUM / HIGH / CRITICAL"]
+    EXPL["explanation<br/>contributions, not causes"]
+    PERSIST[("assessment<br/>+ indicators<br/>+ rule hits")]
+    DECIDE{"alert?"}
+    RAISE["raise or update alert<br/>(deduplicated by window)"]
+    NONE["no alert<br/>the account is still scored"]
+
+    START --> ASOF --> SNAP --> signals --> FUSE
+    FUSE --> AVAIL --> BAND --> EXPL --> PERSIST --> DECIDE
+    DECIDE -->|"score >= threshold<br/>or effect = escalate"| RAISE
+    DECIDE -->|"otherwise"| NONE
+
+    classDef honest fill:#fdf6e9,stroke:#8a6d1f
+    class AVAIL,EXPL honest

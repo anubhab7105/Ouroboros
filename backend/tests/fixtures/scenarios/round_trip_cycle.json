@@ -1,0 +1,22 @@
+{
+  "id": "round_trip_cycle",
+  "label": "Round-trip cycle",
+  "description": "A closed loop: the money returns to the account it started from, having passed through others. In a laundering context the loop exists to produce an apparent provenance for funds that already belonged to the originator.",
+  "parameters": {
+    "hops": 3,
+    "amount": 150000,
+    "hours_between": 3
+  },
+  "expected": {
+    "rule_codes": ["CYCLE_MEMBER"],
+    "min_risk_band": "HIGH",
+    "ground_truth_label": true,
+    "scenario_type": "round_trip"
+  },
+  "confounders": [
+    "Settlement between related businesses, which is cyclical by design and entirely routine.",
+    "A reversal or refund that happens to route back through an intermediary.",
+    "Two people repaying each other in alternation — a shared household, or a rotating savings group."
+  ],
+  "notes": "A cycle is easy to detect and easy to produce innocently, so the detection is worth little without the explanation. The useful form is a cycle plus a short holding time at each hop plus near-complete throughput; the cycle alone should raise a lead and not a conclusion."
+}

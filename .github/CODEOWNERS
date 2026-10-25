@@ -1,0 +1,392 @@
+# =============================================================================
+# MULEGUARD CODEOWNERS
+# -----------------------------------------------------------------------------
+# This file defines review ownership for the MULEGUARD repository.
+#
+# Rules:
+#   - The last matching pattern takes precedence.
+#   - Broad patterns are defined first.
+#   - Sensitive and domain-specific files are defined later.
+#   - Replace @your-org/* with your actual GitHub organization, teams, or users.
+#
+# Example replacements:
+#   @your-org/muleguard-maintainers -> @muleguard/maintainers
+#   @your-org/security-team         -> @muleguard/security
+#   @your-org/backend-team          -> @muleguard/backend
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Global fallback
+# -----------------------------------------------------------------------------
+* @your-org/muleguard-maintainers
+
+
+# -----------------------------------------------------------------------------
+# Root repository governance
+# -----------------------------------------------------------------------------
+/README.md @your-org/muleguard-maintainers @your-org/docs-team
+/CONTRIBUTING.md @your-org/muleguard-maintainers
+/CHANGELOG.md @your-org/muleguard-maintainers
+/LICENSE @your-org/muleguard-maintainers
+/PROJECT_TREE.txt @your-org/devops-team
+
+
+# -----------------------------------------------------------------------------
+# Root configuration and environment safety
+# -----------------------------------------------------------------------------
+/.gitignore @your-org/devops-team
+/.gitattributes @your-org/devops-team
+/.editorconfig @your-org/devops-team
+/.python-version @your-org/devops-team
+/.dockerignore @your-org/devops-team @your-org/security-team
+/.env.example @your-org/security-team @your-org/muleguard-maintainers
+/Makefile @your-org/devops-team @your-org/muleguard-maintainers
+
+
+# -----------------------------------------------------------------------------
+# Docker and deployment
+# -----------------------------------------------------------------------------
+/docker-compose.yml @your-org/devops-team @your-org/security-team
+/docker-compose.override.yml @your-org/devops-team
+
+/backend/Dockerfile @your-org/backend-team @your-org/devops-team
+/backend/docker-entrypoint.sh @your-org/backend-team @your-org/devops-team
+
+/frontend/Dockerfile @your-org/frontend-team @your-org/devops-team
+/frontend/nginx.conf @your-org/frontend-team @your-org/devops-team @your-org/security-team
+
+
+# -----------------------------------------------------------------------------
+# GitHub metadata and CI
+# -----------------------------------------------------------------------------
+/.github/** @your-org/devops-team @your-org/muleguard-maintainers
+
+/.github/CODEOWNERS @your-org/muleguard-maintainers @your-org/security-team
+/.github/workflows/ci.yml @your-org/devops-team @your-org/qa-team @your-org/security-team
+/.github/dependabot.yml @your-org/devops-team @your-org/security-team
+/.github/pull_request_template.md @your-org/muleguard-maintainers
+/.github/ISSUE_TEMPLATE/** @your-org/muleguard-maintainers
+
+
+# -----------------------------------------------------------------------------
+# Documentation
+# -----------------------------------------------------------------------------
+/docs/** @your-org/docs-team @your-org/muleguard-maintainers
+
+/docs/adr/** @your-org/architecture-team @your-org/muleguard-maintainers
+/docs/architecture.md @your-org/architecture-team @your-org/docs-team
+
+/docs/api.md @your-org/api-team @your-org/backend-team @your-org/docs-team
+/docs/data-dictionary.md @your-org/data-team @your-org/docs-team
+
+/docs/model-card.md @your-org/ml-team @your-org/security-team @your-org/docs-team
+
+/docs/security.md @your-org/security-team @your-org/docs-team
+/docs/threat-model.md @your-org/security-team @your-org/docs-team
+/docs/compliance-note.md @your-org/security-team @your-org/docs-team
+
+/docs/testing.md @your-org/qa-team @your-org/docs-team
+/docs/deployment.md @your-org/devops-team @your-org/docs-team
+/docs/observability.md @your-org/devops-team @your-org/docs-team
+/docs/configuration.md @your-org/devops-team @your-org/backend-team @your-org/docs-team
+
+/docs/demo-walkthrough.md @your-org/muleguard-maintainers @your-org/docs-team
+/docs/requirements-traceability.md @your-org/muleguard-maintainers @your-org/docs-team
+/docs/implementation-plan.md @your-org/muleguard-maintainers @your-org/docs-team
+
+/docs/runbooks/** @your-org/devops-team @your-org/docs-team
+/docs/runbooks/pre-deployment-security-checklist.md @your-org/security-team @your-org/devops-team
+
+/docs/diagrams/** @your-org/architecture-team @your-org/docs-team
+
+
+# -----------------------------------------------------------------------------
+# Data schemas, samples, and synthetic data governance
+# -----------------------------------------------------------------------------
+/data/** @your-org/data-team
+
+/data/schemas/** @your-org/data-team @your-org/api-team @your-org/qa-team
+/data/samples/** @your-org/data-team @your-org/qa-team
+/data/generator/** @your-org/data-team
+/data/generated/** @your-org/data-team
+/data/imports/** @your-org/data-team
+
+
+# -----------------------------------------------------------------------------
+# Scripts
+# -----------------------------------------------------------------------------
+/scripts/** @your-org/devops-team
+
+/scripts/generate_data.py @your-org/data-team
+/scripts/import_json.py @your-org/data-team
+/scripts/check_schemas.py @your-org/data-team @your-org/qa-team
+
+/scripts/evaluate_model.py @your-org/ml-team
+/scripts/train_model.sh @your-org/ml-team
+/scripts/train_model.ps1 @your-org/ml-team
+
+/scripts/seed_demo.sh @your-org/data-team @your-org/devops-team
+/scripts/seed_demo.ps1 @your-org/data-team @your-org/devops-team
+/scripts/reset_demo.sh @your-org/data-team @your-org/devops-team
+/scripts/reset_demo.ps1 @your-org/data-team @your-org/devops-team
+
+/scripts/smoke_test.sh @your-org/devops-team @your-org/qa-team
+/scripts/smoke_test.ps1 @your-org/devops-team @your-org/qa-team
+/scripts/generate_project_tree.py @your-org/devops-team
+
+
+# -----------------------------------------------------------------------------
+# Backend: broad ownership
+# -----------------------------------------------------------------------------
+/backend/** @your-org/backend-team
+
+/backend/.env.example @your-org/security-team @your-org/backend-team
+/backend/pyproject.toml @your-org/backend-team @your-org/devops-team
+/backend/requirements.txt @your-org/backend-team @your-org/devops-team @your-org/security-team
+/backend/requirements-dev.txt @your-org/backend-team @your-org/devops-team
+/backend/alembic.ini @your-org/backend-team @your-org/data-team
+
+/backend/config/** @your-org/backend-team @your-org/detection-team @your-org/ml-team
+/backend/migrations/** @your-org/backend-team @your-org/data-team
+
+/backend/app/models.py @your-org/backend-team @your-org/data-team
+/backend/app/db.py @your-org/backend-team @your-org/data-team
+/backend/app/schemas/** @your-org/backend-team @your-org/api-team
+/backend/app/utils/** @your-org/backend-team
+/backend/app/exceptions.py @your-org/backend-team
+/backend/app/lifecycle.py @your-org/backend-team @your-org/devops-team
+/backend/app/bootstrap.py @your-org/backend-team @your-org/security-team
+
+
+# -----------------------------------------------------------------------------
+# Backend: core security and configuration
+# -----------------------------------------------------------------------------
+/backend/app/core/** @your-org/backend-team
+
+/backend/app/core/config.py @your-org/backend-team @your-org/security-team
+/backend/app/core/security.py @your-org/security-team @your-org/backend-team
+/backend/app/core/permissions.py @your-org/security-team @your-org/backend-team
+/backend/app/core/roles.py @your-org/security-team @your-org/backend-team
+/backend/app/core/rate_limit.py @your-org/security-team @your-org/backend-team
+/backend/app/core/logging.py @your-org/backend-team @your-org/security-team
+/backend/app/core/cache.py @your-org/backend-team @your-org/devops-team
+
+
+# -----------------------------------------------------------------------------
+# Backend: authentication and API surface
+# -----------------------------------------------------------------------------
+/backend/app/auth/** @your-org/security-team @your-org/backend-team
+
+/backend/app/api/** @your-org/backend-team @your-org/api-team
+/backend/app/api/deps.py @your-org/backend-team @your-org/security-team
+/backend/app/api/error_handlers.py @your-org/backend-team @your-org/api-team
+/backend/app/api/middleware/** @your-org/backend-team @your-org/security-team
+
+/backend/app/api/v1/router.py @your-org/backend-team @your-org/api-team
+
+/backend/app/api/v1/endpoints/auth.py @your-org/security-team @your-org/backend-team
+/backend/app/api/v1/endpoints/users.py @your-org/security-team @your-org/backend-team
+/backend/app/api/v1/endpoints/health.py @your-org/devops-team @your-org/backend-team
+
+/backend/app/api/v1/endpoints/accounts.py @your-org/backend-team
+/backend/app/api/v1/endpoints/transactions.py @your-org/backend-team
+/backend/app/api/v1/endpoints/entities.py @your-org/data-team @your-org/backend-team
+
+/backend/app/api/v1/endpoints/alerts.py @your-org/detection-team @your-org/backend-team
+/backend/app/api/v1/endpoints/analysis.py @your-org/detection-team @your-org/ml-team
+/backend/app/api/v1/endpoints/audit.py @your-org/security-team @your-org/backend-team
+
+/backend/app/api/v1/endpoints/cases.py @your-org/investigations-team @your-org/backend-team
+/backend/app/api/v1/endpoints/complaints.py @your-org/investigations-team @your-org/backend-team
+/backend/app/api/v1/endpoints/reports.py @your-org/investigations-team @your-org/backend-team
+
+/backend/app/api/v1/endpoints/dashboard.py @your-org/analytics-team @your-org/backend-team
+/backend/app/api/v1/endpoints/graph.py @your-org/graph-team @your-org/backend-team
+/backend/app/api/v1/endpoints/ingestion.py @your-org/data-team @your-org/backend-team
+/backend/app/api/v1/endpoints/model_metrics.py @your-org/ml-team @your-org/backend-team
+
+
+# -----------------------------------------------------------------------------
+# Backend: domain modules
+# -----------------------------------------------------------------------------
+/backend/app/ingestion/** @your-org/data-team @your-org/backend-team
+
+/backend/app/ml/** @your-org/ml-team @your-org/backend-team
+/backend/app/ml/artifacts/** @your-org/ml-team @your-org/security-team
+
+/backend/app/rules/** @your-org/detection-team @your-org/backend-team
+
+/backend/app/graph/** @your-org/graph-team @your-org/backend-team
+
+/backend/app/correlation/** @your-org/investigations-team @your-org/data-team
+
+/backend/app/reports/** @your-org/investigations-team @your-org/backend-team
+
+
+# -----------------------------------------------------------------------------
+# Backend: services
+# -----------------------------------------------------------------------------
+/backend/app/services/** @your-org/backend-team
+
+/backend/app/services/accounts.py @your-org/backend-team
+/backend/app/services/transactions.py @your-org/backend-team
+
+/backend/app/services/complaints.py @your-org/investigations-team @your-org/backend-team
+/backend/app/services/complaint_correlation.py @your-org/investigations-team @your-org/backend-team
+
+/backend/app/services/entities.py @your-org/data-team @your-org/backend-team
+/backend/app/services/entity_links.py @your-org/data-team @your-org/backend-team
+
+/backend/app/services/features.py @your-org/ml-team @your-org/backend-team
+
+/backend/app/services/alerts.py @your-org/detection-team @your-org/backend-team
+/backend/app/services/analysis.py @your-org/detection-team @your-org/ml-team
+/backend/app/services/risk.py @your-org/detection-team @your-org/ml-team
+
+/backend/app/services/graph.py @your-org/graph-team @your-org/backend-team
+
+/backend/app/services/cases.py @your-org/investigations-team @your-org/backend-team
+/backend/app/services/case_state_machine.py @your-org/investigations-team @your-org/backend-team
+/backend/app/services/evidence.py @your-org/investigations-team @your-org/backend-team
+/backend/app/services/case_events.py @your-org/investigations-team @your-org/backend-team
+/backend/app/services/notes.py @your-org/investigations-team @your-org/backend-team
+
+/backend/app/services/audit.py @your-org/security-team @your-org/backend-team
+/backend/app/services/dashboard.py @your-org/analytics-team @your-org/backend-team
+/backend/app/services/reports.py @your-org/investigations-team @your-org/backend-team
+/backend/app/services/ingestion.py @your-org/data-team @your-org/backend-team
+/backend/app/services/users.py @your-org/security-team @your-org/backend-team
+/backend/app/services/model_metrics.py @your-org/ml-team @your-org/backend-team
+
+
+# -----------------------------------------------------------------------------
+# Backend: tests
+# -----------------------------------------------------------------------------
+/backend/tests/** @your-org/backend-team @your-org/qa-team
+
+/backend/tests/conftest.py @your-org/backend-team @your-org/qa-team
+/backend/tests/fixtures/** @your-org/data-team @your-org/qa-team
+
+/backend/tests/test_health.py @your-org/devops-team @your-org/qa-team
+/backend/tests/test_openapi.py @your-org/api-team @your-org/qa-team
+
+/backend/tests/test_auth.py @your-org/security-team @your-org/qa-team
+/backend/tests/test_users.py @your-org/security-team @your-org/qa-team
+/backend/tests/test_permissions.py @your-org/security-team @your-org/qa-team
+/backend/tests/test_rate_limit.py @your-org/security-team @your-org/qa-team
+/backend/tests/test_security_headers.py @your-org/security-team @your-org/qa-team
+
+/backend/tests/test_ingestion.py @your-org/data-team @your-org/qa-team
+/backend/tests/test_ingestion_validation.py @your-org/data-team @your-org/qa-team
+/backend/tests/test_import_transactionality.py @your-org/data-team @your-org/qa-team
+
+/backend/tests/test_accounts.py @your-org/backend-team @your-org/qa-team
+/backend/tests/test_transactions.py @your-org/backend-team @your-org/qa-team
+/backend/tests/test_entities.py @your-org/data-team @your-org/qa-team
+
+/backend/tests/test_features.py @your-org/ml-team @your-org/qa-team
+/backend/tests/test_point_in_time_features.py @your-org/ml-team @your-org/qa-team
+
+/backend/tests/test_rules.py @your-org/detection-team @your-org/qa-team
+/backend/tests/test_risk.py @your-org/detection-team @your-org/ml-team @your-org/qa-team
+/backend/tests/test_analysis.py @your-org/detection-team @your-org/ml-team @your-org/qa-team
+/backend/tests/test_analysis_idempotency.py @your-org/detection-team @your-org/ml-team @your-org/qa-team
+/backend/tests/test_alerts.py @your-org/detection-team @your-org/qa-team
+
+/backend/tests/test_graph.py @your-org/graph-team @your-org/qa-team
+/backend/tests/test_graph_metrics.py @your-org/graph-team @your-org/qa-team
+/backend/tests/test_money_trails.py @your-org/graph-team @your-org/qa-team
+
+/backend/tests/test_complaints.py @your-org/investigations-team @your-org/qa-team
+/backend/tests/test_complaint_correlation.py @your-org/investigations-team @your-org/qa-team
+
+/backend/tests/test_cases.py @your-org/investigations-team @your-org/qa-team
+/backend/tests/test_case_transitions.py @your-org/investigations-team @your-org/qa-team
+/backend/tests/test_evidence.py @your-org/investigations-team @your-org/qa-team
+/backend/tests/test_case_events.py @your-org/investigations-team @your-org/qa-team
+
+/backend/tests/test_audit.py @your-org/security-team @your-org/qa-team
+/backend/tests/test_reports.py @your-org/investigations-team @your-org/qa-team
+
+/backend/tests/test_dashboard.py @your-org/analytics-team @your-org/qa-team
+/backend/tests/test_model_metrics.py @your-org/ml-team @your-org/qa-team
+
+/backend/tests/test_ml.py @your-org/ml-team @your-org/qa-team
+/backend/tests/test_ml_feature_schema.py @your-org/ml-team @your-org/qa-team
+/backend/tests/test_ml_leakage.py @your-org/ml-team @your-org/qa-team
+/backend/tests/test_ml_fallback.py @your-org/ml-team @your-org/qa-team
+
+/backend/tests/test_api_flow.py @your-org/backend-team @your-org/qa-team
+/backend/tests/test_e2e_workflow.py @your-org/muleguard-maintainers @your-org/qa-team
+
+
+# -----------------------------------------------------------------------------
+# Frontend: broad ownership
+# -----------------------------------------------------------------------------
+/frontend/** @your-org/frontend-team
+
+/frontend/.env.example @your-org/security-team @your-org/frontend-team
+
+/frontend/package.json @your-org/frontend-team @your-org/devops-team
+/frontend/package-lock.json @your-org/frontend-team @your-org/devops-team
+
+/frontend/tsconfig.json @your-org/frontend-team
+/frontend/tsconfig.node.json @your-org/frontend-team
+/frontend/vite.config.ts @your-org/frontend-team
+/frontend/vitest.config.ts @your-org/frontend-team
+
+/frontend/index.html @your-org/frontend-team
+/frontend/nginx.conf @your-org/frontend-team @your-org/devops-team @your-org/security-team
+/frontend/Dockerfile @your-org/frontend-team @your-org/devops-team
+
+
+# -----------------------------------------------------------------------------
+# Frontend: application core
+# -----------------------------------------------------------------------------
+/frontend/src/main.tsx @your-org/frontend-team
+/frontend/src/App.tsx @your-org/frontend-team
+/frontend/src/styles.css @your-org/frontend-team
+
+/frontend/src/app/** @your-org/frontend-team
+/frontend/src/components/** @your-org/frontend-team
+/frontend/src/hooks/** @your-org/frontend-team
+/frontend/src/lib/** @your-org/frontend-team
+/frontend/src/routes/** @your-org/frontend-team
+/frontend/src/types/** @your-org/frontend-team @your-org/api-team
+
+/frontend/src/test/** @your-org/frontend-team @your-org/qa-team
+/frontend/src/components/common/__tests__/** @your-org/frontend-team @your-org/qa-team
+/frontend/src/lib/__tests__/** @your-org/frontend-team @your-org/qa-team
+
+
+# -----------------------------------------------------------------------------
+# Frontend: security-sensitive client code
+# -----------------------------------------------------------------------------
+/frontend/src/lib/api.ts @your-org/frontend-team @your-org/api-team
+/frontend/src/lib/apiClient.ts @your-org/frontend-team @your-org/api-team
+/frontend/src/lib/auth.ts @your-org/frontend-team @your-org/security-team
+/frontend/src/lib/permissions.ts @your-org/frontend-team @your-org/security-team
+
+/frontend/src/app/router.tsx @your-org/frontend-team @your-org/security-team
+
+/frontend/src/components/layout/ProtectedRoute.tsx @your-org/frontend-team @your-org/security-team
+/frontend/src/components/layout/RoleGate.tsx @your-org/frontend-team @your-org/security-team
+/frontend/src/components/layout/EnvironmentBanner.tsx @your-org/frontend-team @your-org/security-team
+
+
+# -----------------------------------------------------------------------------
+# Frontend: feature modules
+# -----------------------------------------------------------------------------
+/frontend/src/features/auth/** @your-org/frontend-team @your-org/security-team
+/frontend/src/features/dashboard/** @your-org/frontend-team @your-org/analytics-team
+/frontend/src/features/transactions/** @your-org/frontend-team
+/frontend/src/features/accounts/** @your-org/frontend-team
+/frontend/src/features/alerts/** @your-org/frontend-team @your-org/detection-team
+/frontend/src/features/graph/** @your-org/frontend-team @your-org/graph-team
+/frontend/src/features/complaints/** @your-org/frontend-team @your-org/investigations-team
+/frontend/src/features/cases/** @your-org/frontend-team @your-org/investigations-team
+/frontend/src/features/reports/** @your-org/frontend-team @your-org/investigations-team
+/frontend/src/features/model-monitoring/** @your-org/frontend-team @your-org/ml-team
+/frontend/src/features/ingestion/** @your-org/frontend-team @your-org/data-team
+/frontend/src/features/system/** @your-org/frontend-team

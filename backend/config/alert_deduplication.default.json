@@ -1,0 +1,111 @@
+{
+  "dedup_version": "v1",
+  "description": "Policy controlling when a new analysis run raises a fresh alert versus updating an existing open alert.",
+  "rationale": [
+    "A batch analysis run scores the same accounts repeatedly. Without deduplication, a nightly run would raise the same alert every night and bury the triage queue.",
+    "Deduplication must not hide genuinely new information, so a material escalation breaks out of the existing alert rather than updating it silently."
+  ],
+  "enabled": true,
+  "key": {
+    "template": "{account_id}|{typology_group}|{window_start_date}",
+    "parts": [
+      {"name": "account_id", "source": "assessment.account_id", "required": true},
+      {
+        "name": "typology_group",
+        "source": "sorted distinct rule metadata.typology of triggered rules",
+        "required": true,
+        "notes": "Grouping by typology rather than by individual rule code means adding a new rule to an existing typology does not re-alert every account."
+      },
+      {
+        "name": "window_start_date",
+        "source": "dedup_window_start date in UTC (YYYY-MM-DD)",
+        "required": true
+      }
+    ],
+    "max_length": 255,
+    "notes": [
+      "The key is stored in the unique Alert.dedup_key column, so the database itself prevents a duplicate open alert under a race.",
+      "Blank parts are rendered as '-' so positional meaning is preserved."
+    ]
+  },
+  "window": {
+    "length_days": 7,
+    "alignment": "rolling_from_as_of",
+    "notes": [
+      "A rolling 7-day window means a persistent typology produces at most one alert per week per account.",
+      "dedup_window_start and dedup_window_end are recorded on the alert so an analyst can see exactly what period it covers."
+    ]
+  },
+  "on_duplicate": {
+    "action": "update_existing",
+    "updates": [
+      "last_seen_at",
+      "score",
+      "priority",
+      "signal_summary_json",
+      "rule_codes_json",
+      "updated_by"
+    ],
+    "preserve": [
+      "id",
+      "first_seen_at",
+      "state",
+      "acknowledged_at",
+      "acknowledged_by",
+      "assigned_to",
+      "created_by"
+    ],
+    "notes": [
+      "Triage state is preserved: an analyst who acknowledged an alert must not have it reset to NEW by the next run.",
+      "first_seen_at is preserved so the queue can show how long a pattern has persisted."
+    ]
+  },
+  "break_out_conditions": {
+    "description": "Conditions under which a NEW alert is raised even though a matching open alert exists, because the situation materially changed.",
+    "conditions": [
+      {
+        "name": "band_escalation",
+        "test": "new risk_band is higher than the existing alert's band",
+        "rationale": "An account moving from HIGH to CRITICAL is new information that deserves its own queue entry."
+      },
+      {
+        "name": "score_jump",
+        "test": "new score exceeds existing score by >= 15 points",
+        "rationale": "A large jump signals a change in behaviour rather than the same pattern continuing."
+      },
+      {
+        "name": "new_typology",
+        "test": "a triggered typology is absent from the existing alert's typology group",
+        "rationale": "A second independent typology is corroborating evidence and must be visible."
+      },
+      {
+        "name": "new_complaint_linkage",
+        "test": "a complaint correlation now exists that did not when the alert was raised",
+        "rationale": "External corroboration is the single most actionable change and must never be buried in an update."
+      }
+    ]
+  },
+  "reopen_policy": {
+    "closed_alert_within_days": 14,
+    "action": "raise_new_alert_and_link",
+    "notes": [
+      "If a closed alert's dedup key recurs within 14 days, a new alert is raised and linked to the closed one rather than reopening it, so the original disposition and its audit trail stay intact.",
+      "Beyond 14 days the recurrence is treated as an independent event."
+    ]
+  },
+  "suppression": {
+    "enabled": false,
+    "max_open_alerts_per_account": 5,
+    "notes": [
+      "Suppression is OFF by default and deliberately so: silently dropping alerts is a detection failure that is invisible in the queue.",
+      "When the per-account cap is reached, the run records a suppressed_count on the analysis run and emits an audit event instead of discarding the finding quietly.",
+      "Suppression must never apply to alerts carrying an escalate_to_human effect."
+    ]
+  },
+  "limits": {
+    "max_alerts_per_run": 2000,
+    "max_rule_codes_per_alert": 40,
+    "max_evidence_refs_per_alert": 50,
+    "notes": ["max_alerts_per_run bounds a runaway run; exceeding it marks the run PARTIAL rather than failing it outright."]
+  }
+}

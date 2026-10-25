@@ -1,0 +1,581 @@
+{
+  "pack_id": "muleguard_core_detection",
+  "name": "MULEGUARD core mule-account detection pack",
+  "description": "Transparent, evidence-backed typology rules for suspected mule accounts. Investigative leads only; never proof of wrongdoing and never an automatic enforcement control.",
+  "status": "active",
+  "origin": "builtin",
+  "priority": 10,
+  "enabled": true,
+  "owner": "muleguard-detection",
+  "version": "v1",
+  "tags": ["mule", "layering", "typology", "synthetic"],
+  "metadata": {
+    "feature_schema_version": "v1",
+    "scoring": {
+      "aggregation": "noisy_or",
+      "formula": "score = 1 - product(1 - contribution_i)",
+      "contribution": "clip((severity_weight + score_delta) * matched_leaf_ratio * (1 + priority/200), 0, 1)",
+      "severity_weights": {
+        "info": 0.05,
+        "low": 0.15,
+        "medium": 0.35,
+        "high": 0.6,
+        "critical": 0.85
+      }
+    },
+    "calibration_notes": [
+      "A single CRITICAL rule lands in the 'high' band, not 'critical': one typology alone should not top out the scale.",
+      "Two HIGH rules combine to ~0.84, which is the intended 'multiple independent typologies' signal.",
+      "Three MEDIUM rules combine to ~0.73, so corroborating weak evidence still surfaces an account.",
+      "LOW and INFO rules are context annotations; alone they cannot reach the review threshold."
+    ],
+    "interpretation_limits": [
+      "Every rule describes observable transactional behaviour, not intent.",
+      "Shared devices, IPs, and UPI handles are associations only; families and shared devices are legitimate.",
+      "Complaint correlation indicates a reported incident, not an adjudicated outcome.",
+      "Rules must never be used to automatically freeze, block, or close an account."
+    ]
+  },
+  "rules": [
+    {
+      "rule_id": "mg_rapid_pass_through_24h",
+      "name": "Rapid pass-through within 24 hours",
+      "description": "Funds arrive and leave almost immediately with little retained balance, the defining behaviour of a pass-through mule account.",
+      "kind": "detection",
+      "severity": "critical",
+      "status": "active",
+      "priority": 20,
+      "enabled": true,
+      "condition_logic": "all",
+      "conditions": [
+        {"field": "txn_count_24h", "operator": "gte", "value": 6, "description": "At least six completed transfers in 24 hours."},
+        {"field": "outbound_amount_share_30d", "operator": "gte", "value": 0.8, "description": "At least 80% of monthly value moved outbound."},
+        {"field": "inbound_outbound_amount_ratio_30d", "operator": "between", "min_value": 0.85, "max_value": 1.15, "description": "Inbound and outbound value nearly balance, so little is retained."},
+        {"field": "txn_interarrival_mean_seconds_24h", "operator": "lte", "value": 7200, "description": "Mean gap between transfers under two hours."}
+      ],
+      "action": {
+        "effect": "escalate_to_human",
+        "score_delta": 0.0,
+        "reason_code": "RAPID_PASS_THROUGH",
+        "reason_message": "Inbound funds were forwarded almost immediately with minimal retained balance."
+      },
+      "tags": ["pass_through", "layering"],
+      "metadata": {"typology": "rapid_pass_through", "evidence": ["transactions", "balances"]}
+    },
+    {
+      "rule_id": "mg_fan_in_collection",
+      "name": "Fan-in collection account",
+      "description": "Many distinct senders pay into one account over a short period, the classic victim-collection pattern.",
+      "kind": "detection",
+      "severity": "high",
+      "status": "active",
+      "priority": 15,
+      "enabled": true,
+      "condition_logic": "all",
+      "conditions": [
+        {"field": "graph_in_degree_30d", "operator": "gte", "value": 10, "description": "Ten or more distinct paying counterparties."},
+        {"field": "counterparty_new_ratio_30d", "operator": "gte", "value": 0.6, "description": "Most counterparties are new to this account."},
+        {"field": "graph_source_concentration_30d", "operator": "lte", "value": 0.35, "description": "Inbound value is spread across many senders rather than one payroll source."}
+      ],
+      "action": {
+        "effect": "flag_for_review",
+        "score_delta": 0.0,
+        "reason_code": "FAN_IN_COLLECTION",
+        "reason_message": "Many unfamiliar senders paid into this account in a short window."
+      },
+      "tags": ["fan_in", "collection"],
+      "metadata": {"typology": "fan_in", "evidence": ["transactions", "graph"]}
+    },
+    {
+      "rule_id": "mg_fan_out_distribution",
+      "name": "Fan-out distribution account",
+      "description": "One account disperses funds to many beneficiaries, consistent with a distribution or smurfing leg.",
+      "kind": "detection",
+      "severity": "high",
+      "status": "active",
+      "priority": 15,
+      "enabled": true,
+      "condition_logic": "all",
+      "conditions": [
+        {"field": "graph_out_degree_30d", "operator": "gte", "value": 10, "description": "Ten or more distinct receiving counterparties."},
+        {"field": "outbound_amount_share_30d", "operator": "gte", "value": 0.7, "description": "Predominantly outbound value."},
+        {"field": "graph_beneficiary_concentration_30d", "operator": "lte", "value": 0.35, "description": "Outbound value is dispersed rather than paid to one supplier."}
+      ],
+      "action": {
+        "effect": "flag_for_review",
+        "score_delta": 0.0,
+        "reason_code": "FAN_OUT_DISTRIBUTION",
+        "reason_message": "Funds were dispersed across many distinct beneficiaries."
+      },
+      "tags": ["fan_out", "smurfing"],
+      "metadata": {"typology": "fan_out", "evidence": ["transactions", "graph"]}
+    },
+    {
+      "rule_id": "mg_layering_intermediary",
+      "name": "Layering intermediary position",
+      "description": "The account sits on many short paths between other accounts, acting as a hop in a layering chain rather than an endpoint.",
+      "kind": "detection",
+      "severity": "critical",
+      "status": "active",
+      "priority": 18,
+      "enabled": true,
+      "condition_logic": "all",
+      "conditions": [
+        {"field": "graph_intermediary_score_30d", "operator": "gte", "value": 0.6, "description": "High intermediary position score."},
+        {"field": "graph_betweenness_norm_30d", "operator": "gte", "value": 0.3, "description": "Sits on a large share of shortest paths."},
+        {"field": "graph_path_count_30d", "operator": "gte", "value": 5, "description": "Participates in at least five candidate fund-flow paths."}
+      ],
+      "action": {
+        "effect": "escalate_to_human",
+        "score_delta": 0.0,
+        "reason_code": "LAYERING_INTERMEDIARY",
+        "reason_message": "The account acts as an intermediary hop across multiple fund-flow paths."
+      },
+      "tags": ["layering", "graph"],
+      "metadata": {"typology": "multi_hop_layering", "evidence": ["graph", "transactions"]}
+    },
+    {
+      "rule_id": "mg_round_trip_cycle",
+      "name": "Round-trip cycle participation",
+      "description": "Funds return to an earlier account in the chain, which has no ordinary commercial explanation at this scale.",
+      "kind": "detection",
+      "severity": "high",
+      "status": "active",
+      "priority": 16,
+      "enabled": true,
+      "condition_logic": "all",
+      "conditions": [
+        {"field": "graph_cycle_indicator_30d", "operator": "is_true", "description": "Account participates in a detected transfer cycle."},
+        {"field": "txn_count_30d", "operator": "gte", "value": 4, "description": "Enough activity for the cycle to be meaningful."}
+      ],
+      "action": {
+        "effect": "flag_for_review",
+        "score_delta": 0.05,
+        "reason_code": "ROUND_TRIP_CYCLE",
+        "reason_message": "Funds circulated back to an earlier account in the chain."
+      },
+      "tags": ["cycle", "round_trip"],
+      "metadata": {"typology": "round_trip_cycle", "evidence": ["graph"]}
+    },
+    {
+      "rule_id": "mg_dormant_reactivation",
+      "name": "Dormant account reactivated at volume",
+      "description": "A long-dormant account suddenly transacts heavily, a common signature of a sold or taken-over account.",
+      "kind": "detection",
+      "severity": "high",
+      "status": "active",
+      "priority": 14,
+      "enabled": true,
+      "condition_logic": "all",
+      "conditions": [
+        {"field": "is_dormant_flag", "operator": "is_true", "description": "Account was dormant before the observation window."},
+        {"field": "txn_count_7d", "operator": "gte", "value": 5, "description": "At least five transfers in the last seven days."},
+        {"field": "txn_count_pct_change_7d", "operator": "gte", "value": 2.0, "description": "At least a 200% increase against the prior week."}
+      ],
+      "action": {
+        "effect": "flag_for_review",
+        "score_delta": 0.0,
+        "reason_code": "DORMANT_REACTIVATION",
+        "reason_message": "A previously dormant account became highly active."
+      },
+      "tags": ["dormant", "takeover"],
+      "metadata": {"typology": "dormant_to_active", "evidence": ["transactions"]}
+    },
+    {
+      "rule_id": "mg_new_account_high_velocity",
+      "name": "New account with immediate high velocity",
+      "description": "A freshly opened account transacts at a rate unusual for a genuine new customer.",
+      "kind": "detection",
+      "severity": "high",
+      "status": "active",
+      "priority": 12,
+      "enabled": true,
+      "condition_logic": "all",
+      "conditions": [
+        {"field": "account_age_days", "operator": "lte", "value": 30, "description": "Account opened within the last 30 days."},
+        {"field": "txn_count_24h", "operator": "gte", "value": 5, "description": "At least five transfers in a single day."},
+        {"field": "counterparty_distinct_count_30d", "operator": "gte", "value": 5, "description": "Already transacting with several counterparties."}
+      ],
+      "action": {
+        "effect": "flag_for_review",
+        "score_delta": 0.0,
+        "reason_code": "NEW_ACCOUNT_VELOCITY",
+        "reason_message": "A newly opened account immediately transacted at high velocity."
+      },
+      "tags": ["new_account", "velocity"],
+      "metadata": {"typology": "new_account_velocity", "evidence": ["accounts", "transactions"]}
+    },
+    {
+      "rule_id": "mg_complaint_named_suspect",
+      "name": "Named as suspect in a recent cybercrime complaint",
+      "description": "A complainant named this account as the destination of defrauded funds. This is the strongest single corroborating signal available.",
+      "kind": "detection",
+      "severity": "critical",
+      "status": "active",
+      "priority": 25,
+      "enabled": true,
+      "condition_logic": "all",
+      "conditions": [
+        {"field": "complaint_suspect_count_30d", "operator": "gte", "value": 1, "description": "Named as a suspected account in at least one complaint."},
+        {"field": "complaint_recency_days", "operator": "lte", "value": 30, "description": "The complaint was filed within the last 30 days."}
+      ],
+      "action": {
+        "effect": "escalate_to_human",
+        "score_delta": 0.0,
+        "reason_code": "COMPLAINT_NAMED_SUSPECT",
+        "reason_message": "A recent cybercrime complaint named this account as a suspected recipient."
+      },
+      "tags": ["complaint", "corroboration"],
+      "metadata": {
+        "typology": "complaint_linked",
+        "evidence": ["complaints", "complaint_correlations"],
+        "limits": ["A complaint is an allegation. It is not an adjudicated finding."]
+      }
+    },
+    {
+      "rule_id": "mg_multi_complaint_convergence",
+      "name": "Multiple independent complaints converge",
+      "description": "Several separate complaints reference this account, which is far less likely to be coincidence than a single report.",
+      "kind": "detection",
+      "severity": "critical",
+      "status": "active",
+      "priority": 22,
+      "enabled": true,
+      "condition_logic": "all",
+      "conditions": [
+        {"field": "complaint_count_30d", "operator": "gte", "value": 3, "description": "Three or more complaints reference this account."},
+        {"field": "complaint_linked_txn_ratio_30d", "operator": "gte", "value": 0.2, "description": "A material share of activity is complaint-linked."}
+      ],
+      "action": {
+        "effect": "escalate_to_human",
+        "score_delta": 0.0,
+        "reason_code": "MULTI_COMPLAINT_CONVERGENCE",
+        "reason_message": "Multiple independent complaints reference this account."
+      },
+      "tags": ["complaint", "convergence"],
+      "metadata": {"typology": "complaint_linked", "evidence": ["complaints", "complaint_correlations"]}
+    },
+    {
+      "rule_id": "mg_shared_device_cluster",
+      "name": "Device shared across many accounts",
+      "description": "One device identifier is associated with an implausible number of accounts, suggesting centrally operated accounts.",
+      "kind": "detection",
+      "severity": "high",
+      "status": "active",
+      "priority": 13,
+      "enabled": true,
+      "condition_logic": "all",
+      "conditions": [
+        {"field": "shared_device_account_count_30d", "operator": "gte", "value": 5, "description": "Device linked to five or more accounts."},
+        {"field": "entity_link_unverified_ratio_30d", "operator": "gte", "value": 0.5, "description": "Most of those links are unverified."}
+      ],
+      "action": {
+        "effect": "flag_for_review",
+        "score_delta": 0.0,
+        "reason_code": "SHARED_DEVICE_CLUSTER",
+        "reason_message": "A single device is associated with an unusual number of accounts."
+      },
+      "tags": ["entity", "device", "cluster"],
+      "metadata": {
+        "typology": "shared_entity_network",
+        "evidence": ["entities", "entity_links"],
+        "limits": ["Shared devices occur legitimately within families and small businesses."]
+      }
+    },
+    {
+      "rule_id": "mg_shared_upi_handle_cluster",
+      "name": "UPI handle shared across many accounts",
+      "description": "One UPI handle resolves to many accounts, a pattern seen in rented-account networks.",
+      "kind": "detection",
+      "severity": "medium",
+      "status": "active",
+      "priority": 11,
+      "enabled": true,
+      "condition_logic": "all",
+      "conditions": [
+        {"field": "shared_upi_account_count_30d", "operator": "gte", "value": 4, "description": "UPI handle linked to four or more accounts."}
+      ],
+      "action": {
+        "effect": "flag_for_review",
+        "score_delta": 0.0,
+        "reason_code": "SHARED_UPI_CLUSTER",
+        "reason_message": "A single UPI handle is associated with several accounts."
+      },
+      "tags": ["entity", "upi", "cluster"],
+      "metadata": {"typology": "shared_entity_network", "evidence": ["entities", "entity_links"]}
+    },
+    {
+      "rule_id": "mg_shared_ip_cluster",
+      "name": "Originating IP shared across many accounts",
+      "description": "Many accounts transact from one IP hash. Weaker than a device match because of carrier NAT and shared networks.",
+      "kind": "detection",
+      "severity": "medium",
+      "status": "active",
+      "priority": 8,
+      "enabled": true,
+      "condition_logic": "all",
+      "conditions": [
+        {"field": "shared_ip_account_count_30d", "operator": "gte", "value": 8, "description": "IP linked to eight or more accounts."}
+      ],
+      "action": {
+        "effect": "annotate",
+        "score_delta": 0.0,
+        "reason_code": "SHARED_IP_CLUSTER",
+        "reason_message": "Several accounts share an originating network address."
+      },
+      "tags": ["entity", "ip", "cluster"],
+      "metadata": {
+        "typology": "shared_entity_network",
+        "evidence": ["entities", "entity_links"],
+        "limits": ["Carrier NAT and public Wi-Fi make shared IPs common and weakly probative."]
+      }
+    },
+    {
+      "rule_id": "mg_neighbourhood_complaint_density",
+      "name": "Complaint-dense transaction neighbourhood",
+      "description": "Direct counterparties are themselves frequently complained about, indicating the account sits inside an implicated cluster.",
+      "kind": "detection",
+      "severity": "high",
+      "status": "active",
+      "priority": 14,
+      "enabled": true,
+      "condition_logic": "all",
+      "conditions": [
+        {"field": "graph_neighbor_complaint_ratio_30d", "operator": "gte", "value": 0.25, "description": "A quarter or more of neighbours are complaint-linked."},
+        {"field": "graph_degree_30d", "operator": "gte", "value": 4, "description": "Enough neighbours for the ratio to be meaningful."}
+      ],
+      "action": {
+        "effect": "flag_for_review",
+        "score_delta": 0.0,
+        "reason_code": "NEIGHBOURHOOD_COMPLAINT_DENSITY",
+        "reason_message": "The account transacts with counterparties that are themselves complaint-linked."
+      },
+      "tags": ["graph", "complaint"],
+      "metadata": {"typology": "shared_entity_network", "evidence": ["graph", "complaints"]}
+    },
+    {
+      "rule_id": "mg_structuring_uniform_amounts",
+      "name": "Uniform repeated amounts at volume",
+      "description": "Many transfers of near-identical value, consistent with structuring beneath a reporting or verification threshold.",
+      "kind": "detection",
+      "severity": "medium",
+      "status": "active",
+      "priority": 12,
+      "enabled": true,
+      "condition_logic": "all",
+      "conditions": [
+        {"field": "txn_count_7d", "operator": "gte", "value": 8, "description": "At least eight transfers in a week."},
+        {"field": "txn_amount_cv_30d", "operator": "lte", "value": 0.15, "description": "Amounts vary by under 15%, so they are near-identical."}
+      ],
+      "action": {
+        "effect": "flag_for_review",
+        "score_delta": 0.05,
+        "reason_code": "STRUCTURING_UNIFORM_AMOUNTS",
+        "reason_message": "Repeated transfers of near-identical value suggest structuring."
+      },
+      "tags": ["structuring"],
+      "metadata": {
+        "typology": "structuring",
+        "evidence": ["transactions"],
+        "limits": ["Subscriptions, rent, and payroll also produce uniform amounts."]
+      }
+    },
+    {
+      "rule_id": "mg_balance_flush",
+      "name": "Balance flushed to near zero",
+      "description": "The account is swept almost empty shortly after receiving funds, so value is not retained.",
+      "kind": "detection",
+      "severity": "medium",
+      "status": "active",
+      "priority": 10,
+      "enabled": true,
+      "condition_logic": "all",
+      "conditions": [
+        {"field": "balance_drop_ratio_7d", "operator": "gte", "value": 0.85, "description": "Balance fell by 85% or more within a week."},
+        {"field": "txn_count_7d", "operator": "gte", "value": 3, "description": "The drop was driven by transfers, not a single payment."}
+      ],
+      "action": {
+        "effect": "flag_for_review",
+        "score_delta": 0.0,
+        "reason_code": "BALANCE_FLUSH",
+        "reason_message": "The account balance was swept to near zero after funds arrived."
+      },
+      "tags": ["balance", "pass_through"],
+      "metadata": {"typology": "rapid_pass_through", "evidence": ["balances", "transactions"]}
+    },
+    {
+      "rule_id": "mg_amount_anomaly_spike",
+      "name": "Transfer amount far outside account norm",
+      "description": "A transfer sits many standard deviations above the account's own historical pattern.",
+      "kind": "detection",
+      "severity": "medium",
+      "status": "active",
+      "priority": 9,
+      "enabled": true,
+      "condition_logic": "all",
+      "conditions": [
+        {"field": "txn_amount_zscore_30d", "operator": "gte", "value": 3.0, "description": "At least three standard deviations above the account's own mean."},
+        {"field": "txn_count_30d", "operator": "gte", "value": 5, "description": "Enough history for a z-score to be meaningful."}
+      ],
+      "action": {
+        "effect": "annotate",
+        "score_delta": 0.0,
+        "reason_code": "AMOUNT_ANOMALY_SPIKE",
+        "reason_message": "A transfer was far larger than this account's established pattern."
+      },
+      "tags": ["anomaly", "amount"],
+      "metadata": {"typology": "behavioural_deviation", "evidence": ["transactions"]}
+    },
+    {
+      "rule_id": "mg_single_counterparty_funnel",
+      "name": "Value funnelled to a single beneficiary",
+      "description": "Nearly all outbound value reaches one counterparty, the shape of a collection account forwarding to a controller.",
+      "kind": "detection",
+      "severity": "medium",
+      "status": "active",
+      "priority": 11,
+      "enabled": true,
+      "condition_logic": "all",
+      "conditions": [
+        {"field": "counterparty_top1_share_30d", "operator": "gte", "value": 0.8, "description": "One counterparty receives 80% or more of value."},
+        {"field": "graph_in_degree_30d", "operator": "gte", "value": 5, "description": "Funds were collected from several senders first."},
+        {"field": "outbound_amount_share_30d", "operator": "gte", "value": 0.6, "description": "Predominantly outbound."}
+      ],
+      "action": {
+        "effect": "flag_for_review",
+        "score_delta": 0.0,
+        "reason_code": "SINGLE_COUNTERPARTY_FUNNEL",
+        "reason_message": "Collected funds were forwarded almost entirely to one beneficiary."
+      },
+      "tags": ["funnel", "fan_in"],
+      "metadata": {"typology": "fan_in", "evidence": ["transactions", "graph"]}
+    },
+    {
+      "rule_id": "mg_odd_hours_concentration",
+      "name": "Activity concentrated in night hours",
+      "description": "Transfers cluster in night hours with little spread, a weak contextual signal on its own.",
+      "kind": "detection",
+      "severity": "low",
+      "status": "active",
+      "priority": 5,
+      "enabled": true,
+      "condition_logic": "all",
+      "conditions": [
+        {"field": "txn_night_ratio_30d", "operator": "gte", "value": 0.6, "description": "Most transfers occur during night hours."},
+        {"field": "txn_hour_entropy_30d", "operator": "lte", "value": 1.5, "description": "Activity is concentrated in few hours of the day."},
+        {"field": "txn_count_30d", "operator": "gte", "value": 6, "description": "Enough transfers for the pattern to be real."}
+      ],
+      "action": {
+        "effect": "annotate",
+        "score_delta": 0.0,
+        "reason_code": "ODD_HOURS_CONCENTRATION",
+        "reason_message": "Activity is concentrated in a narrow band of night hours."
+      },
+      "tags": ["temporal"],
+      "metadata": {
+        "typology": "behavioural_deviation",
+        "evidence": ["transactions"],
+        "limits": ["Shift workers and cross-timezone users transact at night legitimately."]
+      }
+    },
+    {
+      "rule_id": "mg_channel_switching",
+      "name": "Frequent payment-channel switching",
+      "description": "Rapid alternation between payment rails, sometimes used to frustrate per-rail monitoring.",
+      "kind": "detection",
+      "severity": "low",
+      "status": "active",
+      "priority": 5,
+      "enabled": true,
+      "condition_logic": "all",
+      "conditions": [
+        {"field": "channel_switch_count_7d", "operator": "gte", "value": 6, "description": "Six or more channel switches in a week."},
+        {"field": "channel_entropy_30d", "operator": "gte", "value": 1.2, "description": "Value genuinely spread across rails."}
+      ],
+      "action": {
+        "effect": "annotate",
+        "score_delta": 0.0,
+        "reason_code": "CHANNEL_SWITCHING",
+        "reason_message": "The account alternates frequently between payment channels."
+      },
+      "tags": ["channel"],
+      "metadata": {"typology": "behavioural_deviation", "evidence": ["transactions"]}
+    },
+    {
+      "rule_id": "mg_velocity_anomaly_model",
+      "name": "Unsupervised velocity anomaly",
+      "description": "The unsupervised velocity detector places this account well outside the population norm.",
+      "kind": "detection",
+      "severity": "medium",
+      "status": "active",
+      "priority": 8,
+      "enabled": true,
+      "condition_logic": "all",
+      "conditions": [
+        {"field": "velocity_anomaly_score_30d", "operator": "gte", "value": 0.75, "description": "High unsupervised velocity anomaly score."}
+      ],
+      "action": {
+        "effect": "annotate",
+        "score_delta": 0.0,
+        "reason_code": "VELOCITY_ANOMALY",
+        "reason_message": "Transaction velocity is anomalous against the population baseline."
+      },
+      "tags": ["anomaly", "unsupervised"],
+      "metadata": {"typology": "behavioural_deviation", "evidence": ["features"]}
+    },
+    {
+      "rule_id": "mg_network_anomaly_model",
+      "name": "Unsupervised network-position anomaly",
+      "description": "The account's graph position is unusual against the population of accounts of similar size.",
+      "kind": "detection",
+      "severity": "medium",
+      "status": "active",
+      "priority": 8,
+      "enabled": true,
+      "condition_logic": "all",
+      "conditions": [
+        {"field": "network_anomaly_score_30d", "operator": "gte", "value": 0.75, "description": "High unsupervised network anomaly score."}
+      ],
+      "action": {
+        "effect": "annotate",
+        "score_delta": 0.0,
+        "reason_code": "NETWORK_ANOMALY",
+        "reason_message": "The account's network position is anomalous against the population baseline."
+      },
+      "tags": ["anomaly", "graph", "unsupervised"],
+      "metadata": {"typology": "behavioural_deviation", "evidence": ["graph", "features"]}
+    },
+    {
+      "rule_id": "mg_established_merchant_context",
+      "name": "Established merchant with stable counterparties",
+      "description": "Annotation only. A long-lived business account with high repeat custom and no complaints is the common false positive for fan-in rules; recording that context helps a triaging analyst dismiss quickly.",
+      "kind": "annotation",
+      "severity": "info",
+      "status": "active",
+      "priority": 0,
+      "enabled": true,
+      "condition_logic": "all",
+      "conditions": [
+        {"field": "is_business_flag", "operator": "is_true", "description": "Registered as a business or merchant account."},
+        {"field": "account_age_days", "operator": "gte", "value": 365, "description": "Open for at least a year."},
+        {"field": "counterparty_repeat_ratio_30d", "operator": "gte", "value": 0.6, "description": "Most counterparties are returning."},
+        {"field": "complaint_count_30d", "operator": "lte", "value": 0, "description": "No complaints reference this account."}
+      ],
+      "action": {
+        "effect": "annotate",
+        "score_delta": 0.0,
+        "reason_code": "ESTABLISHED_MERCHANT_CONTEXT",
+        "reason_message": "Long-established business account with stable repeat counterparties and no complaints."
+      },
+      "tags": ["context", "false_positive_guard"],
+      "metadata": {
+        "typology": "hard_negative",
+        "evidence": ["accounts", "transactions"],
+        "limits": [
+          "This is mitigating context for a human reader, not an exoneration.",
+          "It deliberately does not suppress other rules: a compromised merchant account must still surface."
+        ]
+      }
+    }
+  ]
+}

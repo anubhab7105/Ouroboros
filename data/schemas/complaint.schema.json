@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://muleguard.local/schemas/complaint.schema.json",
+  "title": "complaint",
+  "description": "One synthetic cybercrime or fraud complaint.\n\nA complaint is a citizen's account of what happened. It is evidence that somebody reported something, not evidence that it occurred, and nothing in the platform treats a named account as guilty because a complaint named it.\n\nnarrative_raw is the one field that holds free text written by a person. It is normalised for correlation and is never returned in a list view, an error, a log line or an export.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "reference",
+    "reported_at",
+    "narrative_raw"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$",
+      "maxLength": 64
+    },
+    "reference": {
+      "type": "string",
+      "maxLength": 128,
+      "minLength": 1
+    },
+    "reported_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the complaint was filed. The correlation window is anchored on it, so a wrong value silently changes which transfers are considered."
+    },
+    "category": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 100,
+      "description": "A free-text label rather than an enum, because complaint taxonomies differ between sources and forcing one would lose the distinction the source drew."
+    },
+    "narrative_raw": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 20000
+    },
+    "transaction_reference": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 128,
+      "description": "The transfer the complainant named, if they named one. This is what makes a tier-1 correlation: an exact reference match needs no confidence score and no review, because it is an identity rather than an inference."
+    },
+    "victim_account_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$",
+      "maxLength": 64
+    },
+    "suspected_account_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$",
+      "maxLength": 64,
+      "description": "The account the complainant suspects. A suspicion, recorded as one. It raises an alert for a person to look at and takes no action against the account."
+    },
+    "amount": {
+      "type": [
+        "number",
+        "string",
+        "null"
+      ]
+    },
+    "currency": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[A-Z]{3}$"
+    },
+    "source": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 100
+    },
+    "metadata_json": {
+      "type": "object",
+      "description": "Free-form synthetic context. Sanitised on ingestion: keys that look like secrets, tokens, raw identifiers, ground-truth labels, scenario ids or ring ids are dropped rather than stored."
+    }
+  }
+}

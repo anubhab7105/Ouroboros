@@ -1,0 +1,357 @@
+# =============================================================================
+# MULEGUARD backend runtime requirements
+# -----------------------------------------------------------------------------
+# Purpose:
+#   Runtime Python dependencies for the MULEGUARD FastAPI backend.
+#
+# Install:
+#   pip install -r backend/requirements.txt
+#
+# Development/test/lint/type/security tools:
+#   pip install -r backend/requirements-dev.txt
+#
+# Design rules:
+#   - Python 3.11+
+#   - Synthetic-first prototype
+#   - Modular monolith
+#   - No real banking integrations
+#   - No Kafka/Kubernetes/microservice fleet dependencies
+#   - No deep learning, GNN, LLM, vector-database, or experimental platform
+#     dependencies by default
+#   - Every runtime package below supports a documented MULEGUARD capability
+#   - Optional packages remain commented unless implemented, tested, and
+#     documented
+#
+# Reproducibility guidance:
+#   This file uses thoughtful version ranges for maintainability.
+#   For production-like or regulated deployments, generate an exact lockfile
+#   after CI passes, for example:
+#
+#     pip install pip-tools
+#     pip-compile backend/pyproject.toml --extra dev -o backend/requirements.lock
+#
+#   Then build images from the locked file.
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# 1. Core web/API framework
+# -----------------------------------------------------------------------------
+# FastAPI provides the typed HTTP API layer.
+fastapi>=0.115,<1.0
+
+# Pydantic powers request/response validation and typed settings.
+pydantic>=2.8,<3.0
+
+# Pydantic Settings loads typed environment configuration from .env/runtime env.
+pydantic-settings>=2.4,<3.0
+
+# Uvicorn is the ASGI server. [standard] includes useful production/dev extras.
+uvicorn[standard]>=0.30,<1.0
+
+# python-multipart is required for form/multipart ingestion if enabled.
+python-multipart>=0.0.9,<0.1
+
+# email-validator enables Pydantic EmailStr validation for user emails.
+email-validator>=2.1,<3.0
+
+# typing-extensions provides newer typing constructs on Python 3.11.
+typing-extensions>=4.12,<5.0
+
+
+# -----------------------------------------------------------------------------
+# 2. Persistence, migrations, and database access
+# -----------------------------------------------------------------------------
+# SQLAlchemy 2.x is the ORM and database abstraction layer.
+sqlalchemy>=2.0.30,<2.1
+
+# Alembic manages schema migrations. Migrations are the deployed schema path.
+alembic>=1.13,<2.0
+
+# PostgreSQL driver for Docker/production-like local deployment.
+#
+# Notes:
+#   - psycopg2-binary is convenient for containers and local development.
+#   - In stricter environments, consider building psycopg2 from source with
+#     platform-approved toolchain and pinned system libraries.
+psycopg2-binary>=2.9.9,<3.0
+
+
+# -----------------------------------------------------------------------------
+# 3. Authentication, password hashing, and tokens
+# -----------------------------------------------------------------------------
+# Argon2id is the preferred password hashing scheme where dependency support is
+# stable.
+argon2-cffi>=23.1,<24.0
+
+# bcrypt is an accepted fallback hashing scheme when configured securely.
+bcrypt>=4.1,<5.0
+
+# PyJWT issues and validates signed bearer tokens.
+# Default demo mode uses HS256. Rotate BACKEND_SECRET_KEY securely.
+PyJWT>=2.8,<3.0
+
+
+# -----------------------------------------------------------------------------
+# 4. Configuration and environment loading
+# -----------------------------------------------------------------------------
+# python-dotenv loads local .env files during development.
+# Production deployments should prefer runtime environment variables or a
+# secret manager.
+python-dotenv>=1.0,<2.0
+
+
+# -----------------------------------------------------------------------------
+# 5-7. Numerical, machine-learning and graph stack  --  NOT REQUIRED
+# -----------------------------------------------------------------------------
+# These five packages are deliberately NOT installed, because nothing in
+# `app/`, `tests/` or `scripts/` imports any of them. Verify before changing:
+#
+#   grep -rE "^\s*(import|from)\s+(numpy|pandas|scipy|sklearn|networkx)" \
+#       --include="*.py" app/ tests/ ../scripts/
+#
+# That returns nothing. The implementation went a different way than an early
+# draft of this file assumed:
+#
+#   - `app/ml/` is pure-Python. The supervised baseline, the anomaly scorer,
+#     the feature builder, the splitter and the metrics are all implemented
+#     directly, with no scikit-learn, no numpy and no compiled extension in
+#     the request path. That was a deliberate choice: a detection platform
+#     that cannot score because a wheel failed to build is worse than a
+#     simpler model that always runs. It also means `app/ml/` imports the
+#     standard library only, so training and scoring work offline.
+#   - `app/graph/` and `app/services/graph.py` implement bounded traversal,
+#     degree and weighted metrics, cycle candidates and money-trail search
+#     against the database directly. The database is the source of truth and
+#     the traversal has to respect per-query bounds and emit caveats, which is
+#     not something a general graph library does for you.
+#
+# Installing them anyway costs roughly 400 MB and brings in the single most
+# version-fragile corner of the Python ecosystem: numpy's 1.x/2.x boundary
+# against whatever scipy and scikit-learn currently require. Pinning
+# `numpy<2.0` next to an unpinned modern scikit-learn is how a `pip install`
+# ends up backtracking for twenty minutes and then failing.
+#
+# If you add real scikit-learn models later, uncomment these and pin numpy and
+# scikit-learn together as one compatible pair, not independently:
+#
+# numpy>=1.26,<3.0
+# pandas>=2.2,<3.0
+# scipy>=1.11,<2.0
+# scikit-learn>=1.4,<2.0
+# networkx>=3.2,<4.0
+
+
+# -----------------------------------------------------------------------------
+# 8. PDF investigation reporting
+# -----------------------------------------------------------------------------
+# ReportLab generates PDF reports from persisted case, evidence, transaction,
+# complaint, assessment, note, and event data.
+#
+# This avoids heavier HTML-to-PDF browser dependencies and keeps reporting
+# deterministic for the prototype.
+reportlab>=4.1,<5.0
+
+
+# -----------------------------------------------------------------------------
+# 9. JSON Schema validation for data contracts
+# -----------------------------------------------------------------------------
+# jsonschema validates:
+#   - data/schemas/*.schema.json
+#   - data/samples/*.json
+#   - optional ingestion payload contract checks
+#
+# Pydantic remains the primary API validation layer. jsonschema supports
+# external data-contract tests and documentation alignment.
+jsonschema>=4.22,<5.0
+
+
+# -----------------------------------------------------------------------------
+# 10. Timezone support
+# -----------------------------------------------------------------------------
+# tzdata ensures the IANA timezone database is available on minimal images and
+# Windows environments when zoneinfo is used.
+tzdata>=2024.1,<2027.0
+
+
+# =============================================================================
+# Optional integrations
+# -----------------------------------------------------------------------------
+# Leave these commented unless the corresponding feature is:
+#   - implemented;
+#   - covered by tests;
+#   - documented in docs/security.md and relevant docs;
+#   - enabled through explicit configuration;
+#   - verified not to weaken synthetic-first, explainability, auditability,
+#     bounded graph safety, leakage control, or human-in-the-loop rules.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Optional explainability
+# -----------------------------------------------------------------------------
+# SHAP is optional. Core MULEGUARD functionality must not fail if SHAP is
+# unavailable. If enabled, explanations must be labelled as explanatory, not
+# causal, and must not be presented as proof.
+# shap>=0.45,<0.47
+
+# Matplotlib may be needed for SHAP plots or optional report charts. Keep PDF
+# reporting text/table-first unless chart embedding is explicitly required.
+# matplotlib>=3.8,<4.0
+
+
+# -----------------------------------------------------------------------------
+# Optional caching / background work
+# -----------------------------------------------------------------------------
+# Redis is optional. Do not add it unless a real asynchronous workflow or
+# shared cache is required and tested.
+# redis>=5.0,<6.0
+
+# Celery is optional. The default prototype runs bounded analysis in-process.
+# Only enable a worker if long-running analysis would otherwise block API
+# requests and task failures are exposed safely.
+# celery[redis]>=5.3,<6.0
+
+
+# -----------------------------------------------------------------------------
+# Optional object storage
+# -----------------------------------------------------------------------------
+# Boto3 is optional for S3-compatible report/artifact storage. Do not enable
+# unless object storage is implemented, access-controlled, and audited.
+# boto3>=1.34,<2.0
+
+
+# -----------------------------------------------------------------------------
+# Optional observability
+# -----------------------------------------------------------------------------
+# Sentry is optional. If enabled, ensure breadcrumbs/events do not capture
+# passwords, tokens, secrets, full complaint narratives, or real customer data.
+# sentry-sdk[fastapi]>=2.0,<3.0
+
+# Prometheus client and FastAPI instrumentator are optional. Keep metrics
+# cardinality bounded and avoid labeling metrics with sensitive identifiers.
+# prometheus-client>=0.20,<0.21
+# prometheus-fastapi-instrumentator>=7.0,<8.0
+
+# Structured logging alternatives are optional. The default backend should work
+# with standard Python logging and safe redaction.
+# structlog>=24.1,<25.0
+# python-json-logger>=2.0,<3.0
+
+
+# -----------------------------------------------------------------------------
+# Optional serialization/performance helpers
+# -----------------------------------------------------------------------------
+# orjson can speed up JSON serialization if explicitly benchmarked and tested.
+# Do not replace Pydantic validation with orjson.
+# orjson>=3.10,<4.0
+
+# PyArrow can accelerate tabular operations or support Parquet export/import.
+# Keep synthetic data generation deterministic and documented.
+# pyarrow>=16.0,<17.0
+
+# DuckDB is optional for local analytical experiments. It must not become the
+# source of truth unless a migration/ADR explicitly approves that change.
+# duckdb>=1.0,<2.0
+
+
+# -----------------------------------------------------------------------------
+# Optional cryptographic extensions
+# -----------------------------------------------------------------------------
+# Cryptography is optional for asymmetric JWT algorithms such as RS256/ES256,
+# JWKS validation, or token encryption. Default demo auth may remain HS256.
+# cryptography>=42.0,<43.0
+
+
+# -----------------------------------------------------------------------------
+# Optional file magic / upload hardening
+# -----------------------------------------------------------------------------
+# python-magic can support upload content-type validation if file ingestion is
+# enabled. Keep upload limits, quarantine, and audit rules strict.
+# python-magic>=0.4.27,<0.5
+
+
+# -----------------------------------------------------------------------------
+# Optional ML benchmarking extras
+# -----------------------------------------------------------------------------
+# These are not required for the baseline prototype. Enable only for controlled
+# benchmarking on synthetic data, with leakage/fairness/calibration review.
+# xgboost>=2.0,<3.0
+# lightgbm>=4.3,<5.0
+# catboost>=1.2,<2.0
+# imbalanced-learn>=0.12,<0.13
+# category-encoders>=2.6,<3.0
+
+
+# -----------------------------------------------------------------------------
+# Optional experiment tracking
+# -----------------------------------------------------------------------------
+# Experiment trackers must not ingest real customer data. Use synthetic-only
+# projects, redact artifacts, and keep model cards synchronized.
+# mlflow>=2.12,<3.0
+# wandb>=0.17,<0.18
+# dvc>=3.50,<4.0
+
+
+# -----------------------------------------------------------------------------
+# Optional database/API helpers
+# -----------------------------------------------------------------------------
+# SQLAlchemy Utils may help with certain PostgreSQL types or helpers. Do not add
+# unless it replaces duplicated custom logic and is tested.
+# sqlalchemy-utils>=0.41,<0.42
+
+# Alembic PostgreSQL enum helper may simplify enum migration edge cases.
+# alembic-postgresql-enum>=1.2,<2.0
+
+# FastAPI Pagination may reduce boilerplate, but MULEGUARD should keep explicit,
+# stable, bounded pagination controls.
+# fastapi-pagination>=0.12,<0.13
+
+# Casbin is optional for complex policy engines. Default RBAC should remain
+# centralized, simple, and auditable.
+# casbin>=1.36,<2.0
+
+# Pydantic Extra Types can provide additional validated types. Avoid heavy or
+# ambiguous normalization unless complaint matching tests prove safety.
+# pydantic-extra-types>=2.9,<3.0
+
+
+# -----------------------------------------------------------------------------
+# Optional text/graph performance helpers
+# -----------------------------------------------------------------------------
+# RapidFuzz is optional. Do not use fuzzy matching as verified complaint evidence
+# unless Tier 5 extraction/matching is explicitly implemented, bounded, and
+# labelled as inferred.
+# rapidfuzz>=3.6,<4.0
+
+# RustworkX or igraph may accelerate large graph experiments. The default
+# prototype should remain bounded and NetworkX-based unless performance testing
+# justifies a dependency change.
+# rustworkx>=0.14,<0.15
+# igraph>=0.11,<0.12
+
+
+# =============================================================================
+# Explicitly excluded by design
+# -----------------------------------------------------------------------------
+# The following categories are intentionally absent from runtime requirements:
+#
+#   - Real banking/payment integrations
+#   - Kafka / RabbitMQ / NATS / Pulsar clients
+#   - Kubernetes operators/clients for application logic
+#   - Airflow / Prefect / Dagster / dbt / Spark / Dask / Ray
+#   - PyTorch / TensorFlow / JAX / Transformers / LLM SDKs
+#   - LangChain / LlamaIndex / OpenAI / Anthropic / Mistral / Ollama clients
+#   - Graph neural network libraries such as PyTorch Geometric / DGL / StellarGraph
+#   - Vector databases and embedding stacks such as FAISS / Chroma / Qdrant /
+#     Weaviate / Pinecone / Milvus / pgvector clients
+#   - External cybercrime/intelligence feeds
+#   - Deanonymisation, OSINT, covert surveillance, or automatic enforcement
+#     tooling
+#
+# If any of these are ever considered, they require:
+#   - an ADR;
+#   - a security review;
+#   - a model-risk review;
+#   - updated docs/model-card.md and docs/security.md;
+#   - tests proving no leakage, no unsafe automation, and no fake functionality.
+# =============================================================================

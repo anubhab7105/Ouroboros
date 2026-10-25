@@ -1,0 +1,238 @@
+# =============================================================================
+# MULEGUARD Docker Compose Override
+# -----------------------------------------------------------------------------
+# Purpose:
+#   Local-development overrides for docker-compose.yml.
+#
+# This file is automatically loaded by Docker Compose together with
+# docker-compose.yml. Use it for local developer convenience, not for
+# production-like deployment.
+#
+# Default development behaviour:
+#   - backend runs with debug mode enabled
+#   - backend source code is mounted for faster iteration
+#   - Alembic migrations run on startup
+#   - synthetic demo seeding is enabled by default
+#   - OpenAPI docs are enabled
+#   - CORS includes common local frontend ports
+#
+# To run without this override, use:
+#   COMPOSE_FILE=docker-compose.yml docker compose up --build
+#
+# To reset the synthetic demo database destructively:
+#   docker compose down -v
+# =============================================================================
+
+x-dev-labels: &dev-labels
+  mode: "local-development"
+  data-classification: "synthetic"
+  project: "muleguard"
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL local-development settings
+  # ---------------------------------------------------------------------------
+  db:
+    labels:
+      <<: *dev-labels
+
+    # Optional:
+    # Uncomment only if you need to connect to PostgreSQL from a local
+    # database client such as psql, DBeaver, pgAdmin, or TablePlus.
+    #
+    # Do not expose PostgreSQL in shared or production-like environments.
+    #
+    # ports:
+    #   - "${POSTGRES_HOST_PORT:-5432}:5432"
+
+  # ---------------------------------------------------------------------------
+  # FastAPI backend local-development settings
+  # ---------------------------------------------------------------------------
+  backend:
+    labels:
+      <<: *dev-labels
+
+    build:
+      args:
+        BACKEND_ENV: "local"
+        INSTALL_DEV_DEPENDENCIES: "true"
+
+    environment:
+      BACKEND_ENV: "local"
+      BACKEND_DEBUG: "true"
+      BACKEND_LOG_LEVEL: "DEBUG"
+
+      BACKEND_OPENAPI_ENABLED: "true"
+      BACKEND_DOCS_ENABLED: "true"
+
+      # Common local frontend origins.
+      # 5173: Vite dev server
+      # 4173: Vite preview
+      # 8080: Docker frontend
+      BACKEND_CORS_ORIGINS: "${BACKEND_CORS_ORIGINS:-http://localhost:5173,http://localhost:4173,http://localhost:8080}"
+
+      # Local bootstrap behaviour.
+      ALEMBIC_UPGRADE_ON_START: "true"
+      ALEMBIC_SEED_REFERENCE_DATA: "true"
+
+      # Synthetic demo seeding.
+      # These settings are for local synthetic demo use only.
+      SEED_DEV_USERS: "${SEED_DEV_USERS:-true}"
+      SEED_DEMO_DATA: "${SEED_DEMO_DATA:-true}"
+      SEED_RESET_REQUIRE_CONFIRMATION: "false"
+
+      # Keep ML artifact path relative to backend working directory.
+      ML_ARTIFACT_DIR: "${ML_ARTIFACT_DIR:-app/ml/artifacts}"
+
+      # Helpful local observability settings.
+      BACKEND_LOG_SQL: "${BACKEND_LOG_SQL:-false}"
+      BACKEND_LOG_GRAPH_QUERIES: "${BACKEND_LOG_GRAPH_QUERIES:-true}"
+      BACKEND_LOG_ANALYSIS_RUNS: "${BACKEND_LOG_ANALYSIS_RUNS:-true}"
+
+    # Run with reload for backend development.
+    #
+    # This assumes backend/docker-entrypoint.sh performs migrations/seeding
+    # and then execs the container command.
+    command:
+      [
+        "python",
+        "-m",
+        "uvicorn",
+        "app.main:app",
+        "--reload",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000"
+      ]
+
+    volumes:
+      # Mount backend source for live development.
+      # Adjust target paths if your backend Dockerfile uses a different WORKDIR.
+      - ./backend/app:/app/app
+      - ./backend/migrations:/app/migrations
+      - ./backend/config:/app/config
+      - ./backend/alembic.ini:/app/alembic.ini:ro
+
+      # Optional:
+      # Mount tests if you want to run Pytest inside the backend container.
+      #
+      # - ./backend/tests:/app/tests
+
+      # Optional:
+      # If you want trained model artifacts to persist in a named volume
+      # instead of writing to the host repository, uncomment this and define
+      # the volume at the bottom of this file.
+      #
+      # - backend_ml_artifacts:/app/app/ml/artifacts
+
+    # Optional:
+    # If you are on Linux and the backend container runs as a non-root user,
+    # bind-mounted source files may cause permission issues.
+    # For local development only, you can uncomment this:
+    #
+    # user: "0:0"
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request, sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3).status == 200 else 1)"
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 90s
+
+    # Optional:
+    # Docker Compose Watch support.
+    # Useful if you prefer `docker compose watch` over host-mounted volumes.
+    #
+    # develop:
+    #   watch:
+    #     - action: sync
+    #       path: ./backend/app
+    #       target: /app/app
+    #     - action: sync
+    #       path: ./backend/migrations
+    #       target: /app/migrations
+    #     - action: sync
+    #       path: ./backend/config
+    #       target: /app/config
+    #     - action: rebuild
+    #       path: backend/requirements.txt
+    #     - action: rebuild
+    #       path: backend/requirements-dev.txt
+
+    # Optional:
+    # Python remote debugging with debugpy.
+    #
+    # Requires debugpy to be installed in the backend development environment.
+    #
+    # ports:
+    #   - "5678:5678"
+    #
+    # command:
+    #   [
+    #     "python",
+    #     "-m",
+    #     "debugpy",
+    #     "--listen",
+    #     "0.0.0.0:5678",
+    #     "-m",
+    #     "uvicorn",
+    #     "app.main:app",
+    #     "--reload",
+    #     "--host",
+    #     "0.0.0.0",
+    #     "--port",
+    #     "8000"
+    #   ]
+
+  # ---------------------------------------------------------------------------
+  # Frontend local-development settings
+  # ---------------------------------------------------------------------------
+  frontend:
+    labels:
+      <<: *dev-labels
+
+    build:
+      args:
+        VITE_ENVIRONMENT_LABEL: "${VITE_ENVIRONMENT_LABEL:-LOCAL DEV SYNTHETIC DEMO}"
+        VITE_SHOW_SYNTHETIC_BANNER: "${VITE_SHOW_SYNTHETIC_BANNER:-true}"
+        VITE_SHOW_SCORE_DISCLAIMER: "${VITE_SHOW_SCORE_DISCLAIMER:-true}"
+        VITE_SHOW_LIMITATIONS: "${VITE_SHOW_LIMITATIONS:-true}"
+
+    # For hot-reload frontend development, the recommended path is usually:
+    #
+    #   make dev-frontend
+    #
+    # or:
+    #
+    #   cd frontend
+    #   npm run dev
+    #
+    # The containerized frontend remains useful for testing the Nginx build,
+    # SPA routing, and /api proxy behaviour.
+
+    # Optional:
+    # Mount Nginx config if you are iterating on reverse-proxy behaviour.
+    #
+    # volumes:
+    #   - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+
+# -----------------------------------------------------------------------------
+# Optional named volumes
+# -----------------------------------------------------------------------------
+# Uncomment if you choose to persist ML artifacts in a named volume instead of
+# writing them into the host repository.
+#
+# volumes:
+#   backend_ml_artifacts:
+#     name: muleguard_dev_backend_ml_artifacts
+#     labels:
+#       project: "muleguard"
+#       mode: "local-development"
+#       data: "local-model-artifacts"

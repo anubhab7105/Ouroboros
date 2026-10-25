@@ -1,0 +1,23 @@
+{
+  "id": "fan_in",
+  "label": "Collection account (fan-in)",
+  "description": "Many accounts paying one account in a short window. The collection half of a mule network: victims or sub-mules pay in, and the money accumulates in one place before being moved on. The shape is defined by the number of distinct senders relative to the window, not by the amounts.",
+  "parameters": {
+    "sources": 12,
+    "amount": 24000,
+    "within_hours": 6,
+    "amount_jitter": 0.0
+  },
+  "expected": {
+    "rule_codes": ["FAN_IN_BURST"],
+    "min_risk_band": "HIGH",
+    "ground_truth_label": true,
+    "scenario_type": "fan_in_collector"
+  },
+  "confounders": [
+    "A small merchant on a busy afternoon: many payers, many payments, entirely legitimate. The distinguishing features are that the merchant's inbound spread is stable over months and the money stays put rather than being forwarded. See hard_negative.json.",
+    "A collection for a wedding, a funeral or a medical cost, where a dozen relatives pay one person within hours. Indistinguishable on structure alone.",
+    "Payroll disbursement reversed: a single employer account receiving refunds from many employees after an error."
+  ],
+  "notes": "The amounts sit just under the 25,000 figure that some reporting thresholds use. That is a deliberate part of the shape — structuring to stay under a threshold is itself the signal — but it must not be presented as proof of intent, because the amount a person happens to send is not evidence of their knowledge of any threshold."
+}

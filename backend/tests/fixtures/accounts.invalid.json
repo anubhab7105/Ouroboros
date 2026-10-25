@@ -1,0 +1,71 @@
+{
+  "description": "Account records that must be rejected, each with the reason.",
+  "cases": [
+    {
+      "name": "unknown_account_type",
+      "why": "account_type must be one of the declared enum values. A free-text type would be stored and then fail every comparison that groups by it. SAVINGS specifically: it is a banking product, and account_type classifies the holder -- INDIVIDUAL, BUSINESS, MERCHANT, OTHER -- so there is no honest mapping and the normalizer deliberately does not invent one. This value was once accepted by the ingestion layer and refused by the database, which is the drift this case now guards.",
+      "field": "account_type",
+      "record": {
+        "id": "ACC-X-01",
+        "account_type": "SAVINGS",
+        "status": "ACTIVE"
+      }
+    },
+    {
+      "name": "unknown_status",
+      "why": "status is an enum. Accepting an unknown status would make the dormancy signal meaningless. FROZEN is also absent from the aliases on purpose: MULEGUARD never freezes an account, so it has no value to record for somebody else's decision to do so.",
+      "field": "status",
+      "record": {
+        "id": "ACC-X-02",
+        "account_type": "INDIVIDUAL",
+        "status": "FROZEN"
+      }
+    },
+    {
+      "name": "created_at_not_a_timestamp",
+      "why": "created_at must parse as a datetime. Account age feeds the new-account rules, so an unparseable value cannot be treated as absent.",
+      "field": "created_at",
+      "record": {
+        "id": "ACC-X-03",
+        "account_type": "INDIVIDUAL",
+        "status": "ACTIVE",
+        "created_at": "14-03-2024"
+      }
+    },
+    {
+      "name": "created_at_in_the_future",
+      "why": "An account cannot be opened after now. The ingestion layer allows a small clock-skew tolerance and rejects beyond it; a far-future date is a source-system bug, not skew.",
+      "field": "created_at",
+      "record": {
+        "id": "ACC-X-04",
+        "account_type": "INDIVIDUAL",
+        "status": "ACTIVE",
+        "created_at": "2099-01-01T00:00:00Z"
+      }
+    },
+    {
+      "name": "id_too_long",
+      "why": "The id column is 64 characters and the request model caps the field at 128. A longer id must fail at the boundary rather than be truncated into a collision with another account.",
+      "field": "id",
+      "record": {
+        "id": "ACC-X-0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005",
+        "account_type": "INDIVIDUAL",
+        "status": "ACTIVE"
+      }
+    },
+    {
+      "name": "metadata_not_an_object",
+      "why": "metadata_json is a JSON object. A list would be stored and then fail every reader that expects to look a key up in it.",
+      "field": "metadata_json",
+      "record": {
+        "id": "ACC-X-06",
+        "account_type": "INDIVIDUAL",
+        "status": "ACTIVE",
+        "metadata_json": [
+          "branch_code",
+          "BR-0194"
+        ]
+      }
+    }
+  ]
+}

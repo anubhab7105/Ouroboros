@@ -1,0 +1,73 @@
+{
+  "description": "Seven accounts that between them make every shape the detection rules look for readable. Ids are explicit so the transaction and complaint samples can refer to them, and so a failure names a record rather than an index.",
+  "records": [
+    {
+      "id": "ACC-S-COLLECTOR",
+      "account_type": "INDIVIDUAL",
+      "status": "ACTIVE",
+      "created_at": "2026-04-02T07:15:00Z",
+      "metadata_json": {
+        "note": "Opened eleven days before the inbound burst in the transaction sample. New-account age plus high throughput is the pair the collection rule keys on; either alone is ordinary.",
+        "branch_code": "BR-0194"
+      }
+    },
+    {
+      "id": "ACC-S-SENDER-01",
+      "account_type": "INDIVIDUAL",
+      "status": "ACTIVE",
+      "created_at": "2021-06-18T11:40:00Z",
+      "metadata_json": {
+        "note": "An ordinary long-standing account. One of the twelve senders into the collector."
+      }
+    },
+    {
+      "id": "ACC-S-SENDER-02",
+      "account_type": "INDIVIDUAL",
+      "status": "ACTIVE",
+      "created_at": "2020-01-09T09:05:00Z",
+      "metadata_json": {
+        "note": "Second sender. Unrelated to the first: no shared entity, no prior transfer between them."
+      }
+    },
+    {
+      "id": "ACC-S-MIDDLE",
+      "account_type": "INDIVIDUAL",
+      "status": "ACTIVE",
+      "created_at": "2026-03-28T16:22:00Z",
+      "metadata_json": {
+        "note": "The pass-through. Receives and forwards within minutes, keeping a small remainder. The retained fraction is the signature: an ordinary account that happens to forward a payment keeps a round number or nothing."
+      }
+    },
+    {
+      "id": "ACC-S-DESTINATION",
+      "account_type": "BUSINESS",
+      "status": "ACTIVE",
+      "created_at": "2024-11-11T10:00:00Z",
+      "metadata_json": {
+        "note": "Where the forwarded money lands. A business account, which is why the funnel rule weights it differently from an individual one."
+      }
+    },
+    {
+      "id": "ACC-S-DORMANT",
+      "account_type": "INDIVIDUAL",
+      "status": "DORMANT",
+      "created_at": "2019-02-14T08:30:00Z",
+      "metadata_json": {
+        "note": "Seven years old, no activity for two hundred days, then a sudden inbound. Dormancy plus reactivation is its own typology and does not depend on the amount."
+      }
+    },
+    {
+      "id": "ACC-S-HARD-NEGATIVE",
+      "account_type": "MERCHANT",
+      "status": "ACTIVE",
+      "created_at": "2022-08-03T13:10:00Z",
+      "metadata_json": {
+        "note": "Deliberately difficult. A merchant settling to a payment processor has high throughput, many counterparties and a thin retained balance -- three of the four things the collection rule looks at. It should not alert. If it does, the rules are measuring activity rather than typology, and the queue will fill with legitimate businesses."
+      }
+    }
+  ],
+  "options": {
+    "source_system": "sample",
+    "source_batch_id": "accounts-sample-001"
+  }
+}

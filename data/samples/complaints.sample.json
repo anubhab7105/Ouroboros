@@ -1,0 +1,62 @@
+{
+  "description": "Four complaints covering the correlation tiers. The first names a transaction reference, which is a tier-1 identity and needs no confidence score. The last names nothing specific and should correlate weakly or not at all.",
+  "records": [
+    {
+      "reference": "CMP-S-0001",
+      "reported_at": "2026-04-13T16:10:00Z",
+      "category": "unauthorized_transfer",
+      "narrative_raw": "I transferred Rs 24,000 to what I believed was a verified seller. The reference on my statement is TXN-S-FANIN-01. The seller stopped responding immediately afterwards.",
+      "transaction_reference": "TXN-S-FANIN-01",
+      "victim_account_id": "ACC-S-SENDER-01",
+      "suspected_account_id": "ACC-S-COLLECTOR",
+      "amount": "24000.00",
+      "currency": "INR",
+      "source": "sample",
+      "metadata_json": {
+        "tier": "1 -- exact transaction reference. Deterministic: no confidence, no review state, because this is an identity rather than an inference."
+      }
+    },
+    {
+      "reference": "CMP-S-0002",
+      "reported_at": "2026-04-13T17:45:00Z",
+      "category": "scam",
+      "narrative_raw": "Paid for a phone that never arrived. I do not have the transaction number but it was the same afternoon and the amount was about twenty four thousand rupees.",
+      "victim_account_id": "ACC-S-SENDER-02",
+      "suspected_account_id": "ACC-S-COLLECTOR",
+      "amount": "24137.00",
+      "currency": "INR",
+      "source": "sample",
+      "metadata_json": {
+        "tier": "2 -- named suspect account, no reference. Still deterministic, because the complainant named the account."
+      }
+    },
+    {
+      "reference": "CMP-S-0003",
+      "reported_at": "2026-04-13T19:20:00Z",
+      "category": "phishing",
+      "narrative_raw": "Received a message claiming to be from my bank and entered my details. Money left my account within the hour.",
+      "victim_account_id": "ACC-S-SENDER-01",
+      "amount": "24274.00",
+      "currency": "INR",
+      "source": "sample",
+      "metadata_json": {
+        "tier": "3 to 5 -- inferred. Matched on amount and timing rather than on an identifier, so it carries a confidence score and a review state, and a person decides whether to accept it."
+      }
+    },
+    {
+      "reference": "CMP-S-0004",
+      "reported_at": "2026-04-13T20:05:00Z",
+      "category": "other",
+      "narrative_raw": "Someone has been using my details. I am not sure which transactions are affected or when it started.",
+      "victim_account_id": "ACC-S-DORMANT",
+      "source": "sample",
+      "metadata_json": {
+        "note": "Deliberately vague. It should correlate weakly or not at all. A correlation engine that finds a confident match here is matching noise, and the review queue is where that becomes somebody's wasted afternoon."
+      }
+    }
+  ],
+  "options": {
+    "source_system": "sample",
+    "source_batch_id": "complaints-sample-001"
+  }
+}

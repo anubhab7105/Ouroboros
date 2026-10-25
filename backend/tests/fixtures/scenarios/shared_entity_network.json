@@ -1,0 +1,23 @@
+{
+  "id": "shared_entity_network",
+  "label": "Accounts sharing an identifier",
+  "description": "Several accounts linked to one pseudonymous identifier — a device fingerprint, a phone-number hash, a UPI handle. Co-occurrence on an identifier is what turns a set of unrelated accounts into a candidate network.",
+  "parameters": {
+    "members": 4,
+    "entity_type": "DEVICE",
+    "match_method": "EXACT"
+  },
+  "expected": {
+    "rule_codes": ["SHARED_IDENTIFIER_CLUSTER"],
+    "min_risk_band": "MEDIUM",
+    "ground_truth_label": true,
+    "scenario_type": "shared_identifier_ring"
+  },
+  "confounders": [
+    "A family sharing a handset, which is ordinary and extremely common.",
+    "A recycled phone number: telecoms reissue numbers, and two unrelated customers can hold the same number across time. This is why links are time-bounded and why a point-in-time query must respect the bounds.",
+    "A shared public terminal, a cyber cafe, or a branch tablet used to open several accounts legitimately.",
+    "Carrier-grade NAT, which puts thousands of unrelated subscribers behind one address."
+  ],
+  "notes": "Shared identifiers are a real signal and a weak one, and the gap between those two facts is where this part of the interface earns its keep. The graph draws an inferred edge as a dashed line and a deterministic one as solid; the label says 'shares an identifier with', never 'is controlled by'. Expected band is MEDIUM rather than HIGH for exactly that reason: four accounts on one device is a reason to look, not a finding."
+}

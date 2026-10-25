@@ -1,0 +1,44 @@
+%% The investigation case state machine.
+%%
+%% Defined in backend/app/services/case_state_machine.py and tested
+%% exhaustively in backend/tests/test_case_transitions.py: every ordered pair
+%% of states, not just the legal ones.
+%%
+%% What each transition requires is the part that matters. They are not
+%% decoration: closing without a disposition is the single most expensive
+%% omission in the workflow, because every later measurement of detection
+%% quality reads that field and it cannot be reconstructed afterwards.
+
+stateDiagram-v2
+    [*] --> NEW
+
+    NEW --> TRIAGED: triage<br/>(assignment does this)
+    NEW --> UNDER_INVESTIGATION: start<br/>needs an assignee
+    NEW --> CLOSED: close<br/>needs a disposition
+
+    TRIAGED --> UNDER_INVESTIGATION: start<br/>needs an assignee
+    TRIAGED --> ESCALATED: escalate<br/>needs a reason
+    TRIAGED --> CLOSED: close<br/>needs a disposition
+
+    UNDER_INVESTIGATION --> ESCALATED: escalate<br/>needs a reason
+    UNDER_INVESTIGATION --> CLOSED: close<br/>needs a disposition
+
+    ESCALATED --> UNDER_INVESTIGATION: de_escalate<br/>needs a reason
+    ESCALATED --> CLOSED: close<br/>needs a disposition
+
+    CLOSED --> UNDER_INVESTIGATION: reopen<br/>needs a reason
+
+    note right of UNDER_INVESTIGATION
+        Needs an owner. A case here
+        that nobody owns counts as
+        active everywhere and has
+        nobody accountable for it.
+    end note
+
+    note right of CLOSED
+        Not terminal -- new information
+        arrives. Reopens to
+        UNDER_INVESTIGATION, never to
+        NEW: the work already recorded
+        is part of the case.
+    end note

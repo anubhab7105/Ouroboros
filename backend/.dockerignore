@@ -1,0 +1,613 @@
+# =============================================================================
+# MULEGUARD backend/.dockerignore
+# -----------------------------------------------------------------------------
+# Purpose:
+#   This file is used when the Docker build context is ./backend, for example:
+#
+#     build:
+#       context: ./backend
+#       dockerfile: Dockerfile
+#
+#   It keeps the backend Docker build context small, deterministic, and safe by
+#   excluding:
+#     - secrets and local environment files
+#     - Python caches and virtual environments
+#     - tests and coverage output
+#     - local databases
+#     - generated reports/logs/temp files
+#     - trained ML artifacts and binary model files
+#     - IDE/editor/OS metadata
+#     - credential/certificate/key material
+#
+# Important:
+#   Do not ignore files that the backend Dockerfile intentionally copies, such
+#   as:
+#     - Dockerfile
+#     - docker-entrypoint.sh
+#     - requirements.txt
+#     - requirements-dev.txt, if used by a build/dev stage
+#     - alembic.ini
+#     - migrations/
+#     - app/
+#     - config/
+#
+#   If your Docker Compose build uses the repository root as context instead of
+#   ./backend, then the root .dockerignore is used rather than this file.
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# 1. Version control, CI metadata, and repository hygiene files
+# -----------------------------------------------------------------------------
+.git
+.gitignore
+.gitattributes
+.github
+.gitlab-ci.yml
+.circleci
+.travis.yml
+Jenkinsfile
+azure-pipelines.yml
+buildkite.yml
+teamcity.kts
+
+
+# -----------------------------------------------------------------------------
+# 2. Docker metadata
+# Do not ignore Dockerfile or docker-entrypoint.sh if the backend image copies
+# them. Ignoring .dockerignore itself is safe.
+# -----------------------------------------------------------------------------
+.dockerignore
+.containerignore
+docker-compose.yml
+docker-compose.override.yml
+docker-compose.*.yml
+compose.yml
+compose.override.yml
+compose.*.yml
+.docker/
+
+
+# -----------------------------------------------------------------------------
+# 3. Environment files and secrets
+# Never copy real secrets into Docker images.
+# Keep only safe example files if they are explicitly needed.
+# -----------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+
+*.env
+*.env.*
+*.env.local
+*.env.production
+*.env.staging
+*.env.dev
+*.env.development
+
+.secrets
+secrets/
+secret/
+credentials/
+credential/
+tokens/
+token/
+keys/
+key/
+
+*.secret
+*.secrets
+*.credentials
+*.credential
+*.token
+*.tokens
+*.passwd
+*.password
+*.pass
+*.htpasswd
+*.shadow
+
+*.pem
+*.key
+*.crt
+*.cer
+*.der
+*.p12
+*.pfx
+*.p7b
+*.p7c
+*.p7s
+*.p8
+*.p10
+*.jks
+*.keystore
+*.truststore
+*.ppk
+*.ovpn
+
+id_rsa*
+id_ed25519*
+id_ecdsa*
+id_dsa*
+*.pub
+
+.aws/
+.azure/
+.gcloud/
+.kube/
+.ssh/
+.netrc
+.pypirc
+.git-credentials
+service-account*.json
+*credentials*.json
+*secret*.json
+*token*.json
+
+
+# -----------------------------------------------------------------------------
+# 4. Python bytecode, caches, packaging artifacts, and type/test caches
+# -----------------------------------------------------------------------------
+__pycache__/
+*/__pycache__/
+*/*/__pycache__/
+*/*/*/__pycache__/
+*/*/*/*/__pycache__/
+
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+*.egg
+*.egg-info/
+dist/
+build/
+sdist/
+wheels/
+*.whl
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pytype/
+.tox/
+.nox/
+.cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+site/
+
+
+# -----------------------------------------------------------------------------
+# 5. Virtual environments
+# Docker images must install dependencies inside the image, not reuse host
+# virtual environments.
+# -----------------------------------------------------------------------------
+.venv/
+venv/
+env/
+ENV/
+.virtualenv/
+.virtualenvs/
+conda-env/
+miniconda3/
+anaconda3/
+
+
+# -----------------------------------------------------------------------------
+# 6. Tests, fixtures, snapshots, and local QA output
+# Runtime backend images generally do not need tests.
+# If you build a dedicated test image, remove or adjust this section.
+# -----------------------------------------------------------------------------
+tests/
+test/
+testing/
+*_test.py
+test_*.py
+*.test.py
+*.spec.py
+conftest.py
+pytest.ini
+.pytest.ini
+tox.ini
+noxfile.py
+
+.snapshots/
+snapshots/
+__snapshots__/
+*.snap
+
+coverage/
+coverage-report/
+coverage_html/
+junit.xml
+pytest-report.html
+allure-results/
+allure-report/
+playwright-report/
+test-results/
+
+
+# -----------------------------------------------------------------------------
+# 7. Local databases and database dumps
+# The deployed/demo database should be created by migrations and seeding, not
+# copied from a developer machine.
+# -----------------------------------------------------------------------------
+*.sqlite
+*.sqlite3
+*.sqlite.*
+*.sqlite3.*
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite-journal
+*.sqlite3-wal
+*.sqlite3-shm
+*.sqlite3-journal
+
+*.db
+*.db.*
+*.db-wal
+*.db-shm
+*.db-journal
+
+*.duckdb
+*.duckdb.*
+
+*.sql.gz
+*.sql.bz2
+*.sql.xz
+*.dump
+*.backup
+*.bak
+*.old
+*.orig
+*.rej
+
+
+# -----------------------------------------------------------------------------
+# 8. Generated data, imports, exports, reports, logs, and temporary files
+# -----------------------------------------------------------------------------
+data/generated/
+data/imports/
+data/exports/
+data/tmp/
+data/temp/
+
+backend/data/
+app/data/
+var/data/
+
+reports/
+report/
+generated_reports/
+output/
+outputs/
+results/
+
+logs/
+log/
+*.log
+*.log.*
+*.err
+*.out
+
+tmp/
+temp/
+.tmp/
+.temp/
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+
+# -----------------------------------------------------------------------------
+# 9. Machine-learning artifacts and binary model files
+# Trained model binaries must not be copied into images by default.
+# Keep only documentation and example manifests if needed.
+# -----------------------------------------------------------------------------
+app/ml/artifacts/**
+!app/ml/artifacts/
+!app/ml/artifacts/README.md
+!app/ml/artifacts/model_manifest.example.json
+
+ml/artifacts/**
+!ml/artifacts/
+!ml/artifacts/README.md
+!ml/artifacts/model_manifest.example.json
+
+artifacts/
+model_artifacts/
+models/
+saved_models/
+checkpoints/
+runs/
+wandb/
+mlruns/
+lightning_logs/
+
+*.joblib
+*.pkl
+*.pickle
+*.dill
+*.onnx
+*.pb
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.tflite
+*.mlmodel
+*.model
+*.weights
+*.bin
+*.wasm
+
+*.h5
+*.hdf5
+*.npy
+*.npz
+*.parquet
+*.feather
+*.arrow
+*.ipc
+*.orc
+*.avro
+
+
+# -----------------------------------------------------------------------------
+# 10. Large analytical/data files
+# Synthetic demo data should be generated or imported through supported paths,
+# not baked into the backend image.
+# -----------------------------------------------------------------------------
+*.csv
+*.tsv
+*.dat
+*.jsonl
+*.ndjson
+
+data/*.json
+data/**/*.json
+!data/schemas/
+!data/schemas/**
+!data/samples/
+!data/samples/**
+
+
+# -----------------------------------------------------------------------------
+# 11. Documentation and non-runtime markdown
+# Backend runtime images usually do not need docs.
+# Keep README/example manifest exceptions above if required.
+# -----------------------------------------------------------------------------
+docs/
+doc/
+documentation/
+wiki/
+
+*.md
+*.markdown
+*.rst
+*.adoc
+*.txt
+!app/ml/artifacts/README.md
+!app/ml/artifacts/model_manifest.example.json
+!README.md.example
+
+
+# -----------------------------------------------------------------------------
+# 12. IDE, editor, OS, and developer metadata
+# -----------------------------------------------------------------------------
+.idea/
+.vscode/
+.sublime-project
+.sublime-workspace
+.atom/
+.nova/
+.eclipse/
+.project
+.classpath
+.settings/
+
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+*.lnk
+
+
+# -----------------------------------------------------------------------------
+# 13. Frontend artifacts, if accidentally present under backend context
+# The backend image should not contain frontend build output.
+# -----------------------------------------------------------------------------
+node_modules/
+frontend/
+static/frontend/
+assets/frontend/
+public/frontend/
+
+*.min.js
+*.min.css
+*.map
+*.bundle.js
+*.chunk.js
+
+
+# -----------------------------------------------------------------------------
+# 14. Compiled binaries, archives, and executable artifacts
+# -----------------------------------------------------------------------------
+*.exe
+*.dll
+*.so
+*.dylib
+*.a
+*.o
+*.obj
+*.lib
+*.pdb
+*.ilk
+*.exp
+*.idb
+*.class
+*.jar
+*.war
+*.ear
+*.apk
+*.aab
+*.ipa
+*.deb
+*.rpm
+*.msi
+*.appx
+
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.tar.bz2
+*.tbz2
+*.tar.xz
+*.txz
+*.tar.zst
+*.zst
+*.lz4
+*.lzma
+*.xz
+*.bz2
+*.7z
+*.rar
+*.iso
+*.dmg
+*.img
+
+
+# -----------------------------------------------------------------------------
+# 15. Images, fonts, media, and other non-backend assets
+# -----------------------------------------------------------------------------
+*.png
+*.jpg
+*.jpeg
+*.jpe
+*.jfif
+*.gif
+*.bmp
+*.dib
+*.ico
+*.icns
+*.webp
+*.avif
+*.heic
+*.heif
+*.tif
+*.tiff
+*.psd
+*.psb
+*.ai
+*.eps
+*.ps
+*.svgz
+
+*.ttf
+*.ttc
+*.otf
+*.woff
+*.woff2
+*.eot
+*.fon
+*.fnt
+
+*.mp4
+*.m4v
+*.mov
+*.avi
+*.mkv
+*.webm
+*.wmv
+*.flv
+*.ogv
+*.mpg
+*.mpeg
+*.3gp
+*.3g2
+
+*.mp3
+*.wav
+*.flac
+*.aac
+*.m4a
+*.ogg
+*.oga
+*.opus
+*.mid
+*.midi
+*.wma
+*.aiff
+*.aif
+
+
+# -----------------------------------------------------------------------------
+# 16. Terraform, Kubernetes, Helm, and infrastructure state
+# These belong outside the backend application image.
+# -----------------------------------------------------------------------------
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfvars
+*.tfvars.json
+.terraform/
+.terraform.lock.hcl
+
+helm/
+k8s/
+kubernetes/
+openshift/
+*.chartrepo/
+Chart.lock
+
+
+# -----------------------------------------------------------------------------
+# 17. Backup, swap, crash, and diagnostic files
+# -----------------------------------------------------------------------------
+*.bak
+*.backup
+*.old
+*.orig
+*.rej
+*.stackdump
+*.dmp
+*.core
+*.crash
+*.hprof
+*.heapdump
+*.pid
+*.lock
+*.lck
+
+
+# -----------------------------------------------------------------------------
+# 18. Optional aggressive exclusions
+# Uncomment only if your backend Dockerfile does not need these files.
+# -----------------------------------------------------------------------------
+
+# If the runtime image does not need README/documentation:
+# README.md
+# CHANGELOG.md
+# CONTRIBUTING.md
+# LICENSE
+# NOTICE
+
+# If tests are built in a separate image and never needed in backend context:
+# backend/tests/
+# tests/fixtures/
+
+# If local config overrides should never enter images:
+# config/local.*
+# config/*.local.*
+# config/secrets.*

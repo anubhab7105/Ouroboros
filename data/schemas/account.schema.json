@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://muleguard.local/schemas/account.schema.json",
+  "title": "account",
+  "description": "One synthetic bank account as the ingestion API accepts it.\n\naccount_type classifies the HOLDER, not the banking product. A savings account and a current account held by the same person are both INDIVIDUAL. There is deliberately no product value: the column cannot hold one, and mapping a product onto a holder type would record a claim the source never made.\n\nstatus is observational. REVIEW_REQUIRED means somebody should look; there is no suspended, blocked or restricted value, because MULEGUARD does not take those actions.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "account_type",
+    "status"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$",
+      "maxLength": 64
+    },
+    "account_type": {
+      "type": "string",
+      "enum": [
+        "INDIVIDUAL",
+        "BUSINESS",
+        "MERCHANT",
+        "OTHER"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ACTIVE",
+        "DORMANT",
+        "CLOSED",
+        "REVIEW_REQUIRED"
+      ]
+    },
+    "created_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time",
+      "description": "When the account was opened. Account age feeds the new-account-with-high-throughput signal, so a missing or wrong value weakens detection rather than breaking it."
+    },
+    "metadata_json": {
+      "type": "object",
+      "description": "Free-form synthetic context. Sanitised on ingestion: keys that look like secrets, tokens, raw identifiers, ground-truth labels, scenario ids or ring ids are dropped rather than stored."
+    }
+  }
+}

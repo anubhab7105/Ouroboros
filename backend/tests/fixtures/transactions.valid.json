@@ -1,0 +1,117 @@
+{
+  "description": "Transfers between the accounts in accounts.valid.json. Load that file first: the sender and receiver columns are foreign keys.",
+  "records": [
+    {
+      "reference": "TXN-V-0001",
+      "sender_account_id": "ACC-V-01",
+      "receiver_account_id": "ACC-V-02",
+      "amount": 48500.00,
+      "currency": "INR",
+      "occurred_at": "2025-11-13T07:12:00Z",
+      "status": "COMPLETED",
+      "channel": "UPI"
+    },
+    {
+      "reference": "TXN-V-0002",
+      "sender_account_id": "ACC-V-03",
+      "receiver_account_id": "ACC-V-02",
+      "amount": 49200.00,
+      "currency": "INR",
+      "occurred_at": "2025-11-13T07:26:00Z",
+      "status": "COMPLETED",
+      "channel": "IMPS"
+    },
+    {
+      "reference": "TXN-V-0003",
+      "sender_account_id": "ACC-V-02",
+      "receiver_account_id": "ACC-V-04",
+      "amount": 95800.00,
+      "currency": "INR",
+      "occurred_at": "2025-11-13T07:41:00Z",
+      "status": "COMPLETED",
+      "channel": "IMPS",
+      "metadata_json": {
+        "note": "97.5% of the two inbound transfers, forwarded 15 minutes after the second. The retained remainder is the signature the pass-through rule measures."
+      }
+    },
+    {
+      "reference": "TXN-V-0004",
+      "sender_account_id": "ACC-V-04",
+      "receiver_account_id": "ACC-V-05",
+      "amount": 25000.00,
+      "currency": "INR",
+      "occurred_at": "2025-11-13T09:00:00Z",
+      "status": "PENDING",
+      "channel": "NEFT",
+      "metadata_json": {
+        "note": "PENDING is excluded from every monetary aggregate. The account summary reports its count separately so the difference from a naive ledger sum is visible."
+      }
+    },
+    {
+      "reference": "TXN-V-0005",
+      "sender_account_id": "ACC-V-04",
+      "receiver_account_id": "ACC-V-06",
+      "amount": 18000.00,
+      "currency": "INR",
+      "occurred_at": "2025-11-13T09:15:00Z",
+      "status": "FAILED",
+      "channel": "NEFT"
+    },
+    {
+      "reference": "TXN-V-0006",
+      "sender_account_id": "ACC-V-01",
+      "receiver_account_id": "ACC-V-03",
+      "amount": 1250.50,
+      "currency": "INR",
+      "occurred_at": "2025-11-14T18:02:00Z",
+      "status": "COMPLETED",
+      "channel": "CARD",
+      "metadata_json": {
+        "note": "An ordinary card payment to a merchant. Present so that the fixtures are not composed only of suspicious activity."
+      }
+    },
+    {
+      "reference": "TXN-V-0007",
+      "sender_account_id": "ACC-V-01",
+      "receiver_account_id": "ACC-V-07",
+      "amount": 300.00,
+      "currency": "USD",
+      "occurred_at": "2025-11-15T04:30:00Z",
+      "status": "COMPLETED",
+      "channel": "RTGS",
+      "metadata_json": {
+        "note": "A second currency on purpose. Totals are reported per currency and never summed across them; this record is what makes that assertable."
+      }
+    },
+    {
+      "reference": "TXN-V-0008",
+      "sender_account_id": "ACC-V-05",
+      "receiver_account_id": "ACC-V-05",
+      "amount": 7000.00,
+      "currency": "INR",
+      "occurred_at": "2025-11-15T10:00:00Z",
+      "status": "COMPLETED",
+      "channel": "INTERNAL",
+      "metadata_json": {
+        "note": "A self-transfer. Counted separately: it moves no money between parties and would otherwise inflate both the inbound and outbound totals of one account."
+      }
+    },
+    {
+      "reference": "TXN-V-0009",
+      "sender_account_id": "ACC-V-03",
+      "receiver_account_id": "ACC-V-01",
+      "amount": 2400.00,
+      "currency": "INR",
+      "occurred_at": "2025-11-16T12:20:00Z",
+      "status": "REVERSED",
+      "channel": "CARD",
+      "metadata_json": {
+        "note": "A refund that was reversed. Excluded from aggregates and counted."
+      }
+    }
+  ],
+  "options": {
+    "source_system": "fixture",
+    "source_batch_id": "transactions-valid-001"
+  }
+}

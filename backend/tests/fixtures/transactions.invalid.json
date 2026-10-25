@@ -1,0 +1,121 @@
+{
+  "description": "Transaction records that must be rejected, each with the reason.",
+  "cases": [
+    {
+      "name": "zero_amount",
+      "why": "amount is constrained to greater than zero. A zero transfer is not an event; admitting it would add a counterparty to every fan-in count for free.",
+      "field": "amount",
+      "record": {
+        "reference": "TXN-X-0001",
+        "sender_account_id": "ACC-V-01",
+        "receiver_account_id": "ACC-V-02",
+        "amount": 0,
+        "currency": "INR",
+        "occurred_at": "2025-11-13T07:12:00Z"
+      }
+    },
+    {
+      "name": "negative_amount",
+      "why": "Direction is carried by the sender and receiver columns, not by the sign of the amount. A negative amount would reverse a transfer without reversing its edge in the graph.",
+      "field": "amount",
+      "record": {
+        "reference": "TXN-X-0002",
+        "sender_account_id": "ACC-V-01",
+        "receiver_account_id": "ACC-V-02",
+        "amount": -5000,
+        "currency": "INR",
+        "occurred_at": "2025-11-13T07:12:00Z"
+      }
+    },
+    {
+      "name": "missing_reference",
+      "why": "reference is required and unique. It is how a complaint naming a transaction is matched deterministically; without it the correlation drops to an inference tier.",
+      "field": "reference",
+      "record": {
+        "sender_account_id": "ACC-V-01",
+        "receiver_account_id": "ACC-V-02",
+        "amount": 5000,
+        "currency": "INR",
+        "occurred_at": "2025-11-13T07:12:00Z"
+      }
+    },
+    {
+      "name": "missing_occurred_at",
+      "why": "occurred_at is required. Every window, rate and velocity feature is defined over it, and a transfer with no time cannot be placed in any of them.",
+      "field": "occurred_at",
+      "record": {
+        "reference": "TXN-X-0004",
+        "sender_account_id": "ACC-V-01",
+        "receiver_account_id": "ACC-V-02",
+        "amount": 5000,
+        "currency": "INR"
+      }
+    },
+    {
+      "name": "currency_not_three_letters",
+      "why": "currency is a three-character code. 'Rs' would create a second currency bucket that looks like a typo and is impossible to reconcile later.",
+      "field": "currency",
+      "record": {
+        "reference": "TXN-X-0005",
+        "sender_account_id": "ACC-V-01",
+        "receiver_account_id": "ACC-V-02",
+        "amount": 5000,
+        "currency": "Rs",
+        "occurred_at": "2025-11-13T07:12:00Z"
+      }
+    },
+    {
+      "name": "unknown_channel",
+      "why": "channel is an enum. An unrecognised channel would be stored and then never match any channel-specific rule, which looks like the rule failing.",
+      "field": "channel",
+      "record": {
+        "reference": "TXN-X-0006",
+        "sender_account_id": "ACC-V-01",
+        "receiver_account_id": "ACC-V-02",
+        "amount": 5000,
+        "currency": "INR",
+        "occurred_at": "2025-11-13T07:12:00Z",
+        "channel": "CHEQUE"
+      }
+    },
+    {
+      "name": "unknown_sender_account",
+      "why": "Both account columns are foreign keys. An unknown sender must fail the batch rather than create a phantom account, which would appear in the graph as a node with no history.",
+      "field": "sender_account_id",
+      "record": {
+        "reference": "TXN-X-0007",
+        "sender_account_id": "ACC-DOES-NOT-EXIST",
+        "receiver_account_id": "ACC-V-02",
+        "amount": 5000,
+        "currency": "INR",
+        "occurred_at": "2025-11-13T07:12:00Z"
+      }
+    },
+    {
+      "name": "occurred_at_in_the_future",
+      "why": "A transfer dated beyond the clock-skew tolerance is a source-system error. Admitting it would let a future-dated row sit at the head of every recency window indefinitely.",
+      "field": "occurred_at",
+      "record": {
+        "reference": "TXN-X-0008",
+        "sender_account_id": "ACC-V-01",
+        "receiver_account_id": "ACC-V-02",
+        "amount": 5000,
+        "currency": "INR",
+        "occurred_at": "2099-01-01T00:00:00Z"
+      }
+    },
+    {
+      "name": "amount_not_numeric",
+      "why": "amount must parse as a decimal. A string that happens to contain separators is the most common real-world feed defect and the most dangerous to coerce silently.",
+      "field": "amount",
+      "record": {
+        "reference": "TXN-X-0009",
+        "sender_account_id": "ACC-V-01",
+        "receiver_account_id": "ACC-V-02",
+        "amount": "48,500",
+        "currency": "INR",
+        "occurred_at": "2025-11-13T07:12:00Z"
+      }
+    }
+  ]
+}

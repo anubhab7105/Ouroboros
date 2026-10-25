@@ -1,0 +1,699 @@
+# =============================================================================
+# MULEGUARD .gitattributes
+# -----------------------------------------------------------------------------
+# Purpose:
+# - Normalize line endings safely across Windows, macOS, and Linux
+# - Force LF for Unix/Python/Docker/shell files
+# - Force CRLF for Windows batch/PowerShell files
+# - Keep Makefiles tab-safe
+# - Mark binary/generated artifacts correctly
+# - Reduce noisy diffs for lockfiles, caches, reports, ML artifacts, and data
+# - Avoid committing or diffing secrets, databases, and model binaries
+#
+# After changing this file, renormalize existing files with:
+#   git add .gitattributes
+#   git add --renormalize .
+#   git commit -m "chore: normalize line endings and binary attributes"
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# Default normalization
+# -----------------------------------------------------------------------------
+* text=auto eol=lf
+
+
+# -----------------------------------------------------------------------------
+# Repository metadata
+# -----------------------------------------------------------------------------
+/.gitattributes text eol=lf export-ignore
+/.gitignore text eol=lf export-ignore
+/.editorconfig text eol=lf export-ignore
+/.dockerignore text eol=lf export-ignore
+/.containerignore text eol=lf export-ignore
+/.env.example text eol=lf
+/.python-version text eol=lf export-ignore
+/.nvmrc text eol=lf export-ignore
+/.node-version text eol=lf export-ignore
+/.tool-versions text eol=lf export-ignore
+/.git-blame-ignore-revs text eol=lf export-ignore
+/.gitmodules text eol=lf export-ignore
+/.mailmap text eol=lf export-ignore
+
+/.github export-ignore
+.github/** text eol=lf
+
+CODEOWNERS text eol=lf
+PULL_REQUEST_TEMPLATE.md text eol=lf
+ISSUE_TEMPLATE.md text eol=lf
+
+LICENSE text eol=lf
+NOTICE text eol=lf
+AUTHORS.md text eol=lf
+CONTRIBUTORS.md text eol=lf
+CHANGELOG.md text eol=lf
+CONTRIBUTING.md text eol=lf
+README.md text eol=lf
+PROJECT_TREE.txt text eol=lf linguist-generated=true export-ignore
+
+
+# -----------------------------------------------------------------------------
+# Documentation and diagrams
+# -----------------------------------------------------------------------------
+*.md text eol=lf
+*.markdown text eol=lf
+*.rst text eol=lf
+*.adoc text eol=lf
+*.mdx text eol=lf
+*.txt text eol=lf
+*.text text eol=lf
+
+*.mmd text eol=lf
+*.mermaid text eol=lf
+*.graphviz text eol=lf
+*.puml text eol=lf
+*.plantuml text eol=lf
+*.drawio text eol=lf
+*.excalidraw text eol=lf
+
+docs/** linguist-documentation=true
+docs/diagrams/*.svg text eol=lf linguist-generated=true
+
+
+# -----------------------------------------------------------------------------
+# Python backend
+# -----------------------------------------------------------------------------
+*.py text eol=lf
+*.pyi text eol=lf
+*.pyx text eol=lf
+*.pxd text eol=lf
+*.pxi text eol=lf
+py.typed text eol=lf
+
+*.pyc binary export-ignore
+*.pyo binary export-ignore
+*.pyd binary export-ignore
+*.whl binary export-ignore
+*.egg binary export-ignore
+
+__pycache__ export-ignore
+__pycache__/** binary linguist-generated=true export-ignore
+
+.pytest_cache export-ignore
+.pytest_cache/** binary linguist-generated=true export-ignore
+
+.mypy_cache export-ignore
+.mypy_cache/** binary linguist-generated=true export-ignore
+
+.ruff_cache export-ignore
+.ruff_cache/** binary linguist-generated=true export-ignore
+
+.tox export-ignore
+.tox/** binary linguist-generated=true export-ignore
+
+.nox export-ignore
+.nox/** binary linguist-generated=true export-ignore
+
+.cache export-ignore
+.cache/** binary linguist-generated=true export-ignore
+
+
+# -----------------------------------------------------------------------------
+# Python config and dependency files
+# -----------------------------------------------------------------------------
+requirements.txt text eol=lf
+requirements-dev.txt text eol=lf
+constraints.txt text eol=lf
+constraints-dev.txt text eol=lf
+alembic.ini text eol=lf
+pyproject.toml text eol=lf
+setup.cfg text eol=lf
+setup.py text eol=lf
+Pipfile text eol=lf
+Pipfile.lock text eol=lf linguist-generated=true
+poetry.lock text eol=lf linguist-generated=true
+uv.lock text eol=lf linguist-generated=true
+*.toml text eol=lf
+*.ini text eol=lf
+*.cfg text eol=lf
+
+
+# -----------------------------------------------------------------------------
+# JavaScript / TypeScript / React frontend
+# -----------------------------------------------------------------------------
+*.js text eol=lf
+*.mjs text eol=lf
+*.cjs text eol=lf
+*.jsx text eol=lf
+*.ts text eol=lf
+*.mts text eol=lf
+*.cts text eol=lf
+*.tsx text eol=lf
+
+*.json text eol=lf
+*.json5 text eol=lf
+*.jsonc text eol=lf
+*.jsonl text eol=lf
+*.ndjson text eol=lf
+*.har binary linguist-generated=true
+
+*.html text eol=lf
+*.htm text eol=lf
+*.css text eol=lf
+*.scss text eol=lf
+*.sass text eol=lf
+*.less text eol=lf
+*.pcss text eol=lf
+*.postcss text eol=lf
+
+package.json text eol=lf
+package-lock.json text eol=lf linguist-generated=true
+npm-shrinkwrap.json text eol=lf linguist-generated=true
+yarn.lock text eol=lf linguist-generated=true
+pnpm-lock.yaml text eol=lf linguist-generated=true
+*.lock text eol=lf linguist-generated=true
+*.lockb binary linguist-generated=true
+
+tsconfig.json text eol=lf
+tsconfig.node.json text eol=lf
+vite.config.ts text eol=lf
+vitest.config.ts text eol=lf
+tailwind.config.js text eol=lf
+postcss.config.js text eol=lf
+.eslintrc.cjs text eol=lf
+.prettierrc text eol=lf
+.npmrc text eol=lf
+.nvmrc text eol=lf
+.node-version text eol=lf
+
+*.tsbuildinfo binary linguist-generated=true export-ignore
+.eslintcache binary linguist-generated=true export-ignore
+.stylelintcache binary linguist-generated=true export-ignore
+
+*.min.js binary linguist-generated=true
+*.min.css binary linguist-generated=true
+*.map binary linguist-generated=true
+*.snap text eol=lf linguist-generated=true
+
+node_modules export-ignore
+node_modules/** binary linguist-vendored=true export-ignore
+
+dist export-ignore
+dist/** binary linguist-generated=true export-ignore
+
+build export-ignore
+build/** binary linguist-generated=true export-ignore
+
+frontend/dist export-ignore
+frontend/dist/** binary linguist-generated=true export-ignore
+
+frontend/build export-ignore
+frontend/build/** binary linguist-generated=true export-ignore
+
+coverage export-ignore
+coverage/** binary linguist-generated=true export-ignore
+
+htmlcov export-ignore
+htmlcov/** binary linguist-generated=true export-ignore
+
+test-results export-ignore
+test-results/** binary linguist-generated=true export-ignore
+
+playwright-report export-ignore
+playwright-report/** binary linguist-generated=true export-ignore
+
+allure-results export-ignore
+allure-results/** binary linguist-generated=true export-ignore
+
+
+# -----------------------------------------------------------------------------
+# YAML / Docker / CI configuration
+# -----------------------------------------------------------------------------
+*.yml text eol=lf
+*.yaml text eol=lf
+docker-compose.yml text eol=lf
+docker-compose.override.yml text eol=lf
+docker-compose.*.yml text eol=lf
+compose.yml text eol=lf
+compose.override.yml text eol=lf
+compose.*.yml text eol=lf
+
+
+# -----------------------------------------------------------------------------
+# Docker / containers / reverse proxy
+# -----------------------------------------------------------------------------
+Dockerfile* text eol=lf
+Containerfile* text eol=lf
+*.dockerfile text eol=lf
+*.containerfile text eol=lf
+.dockerignore text eol=lf
+.containerignore text eol=lf
+
+nginx.conf text eol=lf
+*.nginx text eol=lf
+*.vhost text eol=lf
+*.conf text eol=lf
+
+
+# -----------------------------------------------------------------------------
+# Shell scripts and Makefiles
+# Makefiles must use real tabs.
+# -----------------------------------------------------------------------------
+*.sh text eol=lf
+*.bash text eol=lf
+*.zsh text eol=lf
+*.fish text eol=lf
+*.ksh text eol=lf
+*.csh text eol=lf
+*.tcsh text eol=lf
+
+Makefile text eol=lf
+makefile text eol=lf
+GNUmakefile text eol=lf
+*.mk text eol=lf
+*.make text eol=lf
+
+*.cron text eol=lf
+crontab text eol=lf
+
+
+# -----------------------------------------------------------------------------
+# Windows scripts
+# -----------------------------------------------------------------------------
+*.ps1 text eol=crlf
+*.psm1 text eol=crlf
+*.psd1 text eol=crlf
+*.ps1xml text eol=crlf
+*.psc1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.reg text eol=crlf
+
+
+# -----------------------------------------------------------------------------
+# Data files
+# JSON schemas and samples should stay readable.
+# CSV/TSV are kept unnormalized because whitespace/line endings can be data.
+# -----------------------------------------------------------------------------
+data/schemas/** text eol=lf
+data/samples/** text eol=lf
+data/generator/** text eol=lf
+
+*.csv -text
+*.tsv -text
+*.dat binary
+
+data/generated export-ignore
+data/generated/** binary linguist-generated=true export-ignore
+
+data/imports export-ignore
+data/imports/** binary linguist-generated=true export-ignore
+
+backend/data export-ignore
+backend/data/** binary linguist-generated=true export-ignore
+
+
+# -----------------------------------------------------------------------------
+# Databases and analytical data binaries
+# -----------------------------------------------------------------------------
+*.sqlite binary
+*.sqlite3 binary
+*.sqlite.* binary
+*.sqlite3.* binary
+*.sqlite-wal binary
+*.sqlite-shm binary
+*.sqlite-journal binary
+*.sqlite3-wal binary
+*.sqlite3-shm binary
+*.sqlite3-journal binary
+
+*.db binary
+*.db.* binary
+*.db-wal binary
+*.db-shm binary
+*.db-journal binary
+
+*.duckdb binary
+*.duckdb.* binary
+
+*.mdb binary
+*.accdb binary
+*.kdbx binary
+
+*.parquet binary
+*.feather binary
+*.arrow binary
+*.ipc binary
+*.orc binary
+*.avro binary
+*.npy binary
+*.npz binary
+*.h5 binary
+*.hdf5 binary
+
+
+# -----------------------------------------------------------------------------
+# Machine-learning artifacts
+# Do not diff trained model binaries.
+# -----------------------------------------------------------------------------
+*.joblib binary
+*.pkl binary
+*.pickle binary
+*.dill binary
+*.onnx binary
+*.pb binary
+*.pt binary
+*.pth binary
+*.ckpt binary
+*.safetensors binary
+*.tflite binary
+*.mlmodel binary
+*.model binary
+*.weights binary
+*.bin binary
+*.wasm binary
+
+backend/app/ml/artifacts/README.md text eol=lf
+backend/app/ml/artifacts/model_manifest.example.json text eol=lf
+
+
+# -----------------------------------------------------------------------------
+# Secrets, certificates, and credential material
+# These should never be committed. Marking them binary/export-ignore reduces
+# accidental diffs and archive leakage if they are accidentally staged.
+# -----------------------------------------------------------------------------
+.env binary export-ignore
+.env.* binary export-ignore
+.env.example text eol=lf
+
+*.env binary export-ignore
+*.env.* binary export-ignore
+*.env.example text eol=lf
+
+backend/.env binary export-ignore
+backend/.env.* binary export-ignore
+backend/.env.example text eol=lf
+
+frontend/.env binary export-ignore
+frontend/.env.* binary export-ignore
+frontend/.env.example text eol=lf
+
+*.pem binary export-ignore
+*.key binary export-ignore
+*.crt binary export-ignore
+*.cer binary export-ignore
+*.der binary export-ignore
+*.p12 binary export-ignore
+*.pfx binary export-ignore
+*.p7b binary export-ignore
+*.p7c binary export-ignore
+*.p7s binary export-ignore
+*.p8 binary export-ignore
+*.p10 binary export-ignore
+*.jks binary export-ignore
+*.keystore binary export-ignore
+*.truststore binary export-ignore
+*.ppk binary export-ignore
+*.ovpn binary export-ignore
+
+*.secret binary export-ignore
+*.secrets binary export-ignore
+*.credentials binary export-ignore
+*.credential binary export-ignore
+*.token binary export-ignore
+*.passwd binary export-ignore
+*.password binary export-ignore
+*.pass binary export-ignore
+*.htpasswd binary export-ignore
+*.shadow binary export-ignore
+
+.netrc binary export-ignore
+.pypirc binary export-ignore
+.git-credentials binary export-ignore
+
+id_rsa* binary export-ignore
+id_ed25519* binary export-ignore
+id_ecdsa* binary export-ignore
+
+.aws export-ignore
+.aws/** binary export-ignore
+
+.azure export-ignore
+.azure/** binary export-ignore
+
+.gcloud export-ignore
+.gcloud/** binary export-ignore
+
+.kube export-ignore
+.kube/** binary export-ignore
+
+.ssh export-ignore
+.ssh/** binary export-ignore
+
+.docker/config.json binary export-ignore
+docker-config.json binary export-ignore
+
+*.tfstate binary export-ignore
+*.tfstate.* binary export-ignore
+*.tfplan binary export-ignore
+*.tfvars binary export-ignore
+*.tfvars.json binary export-ignore
+
+
+# -----------------------------------------------------------------------------
+# Reports, logs, backups, and temporary files
+# -----------------------------------------------------------------------------
+reports export-ignore
+reports/** binary linguist-generated=true export-ignore
+
+*.pdf binary
+*.log -text export-ignore
+*.err -text export-ignore
+*.out -text export-ignore
+*.tmp binary export-ignore
+*.temp binary export-ignore
+*.bak binary export-ignore
+*.old binary export-ignore
+*.orig binary export-ignore
+*.rej -text export-ignore
+*.dump binary export-ignore
+*.backup binary export-ignore
+*.stackdump binary export-ignore
+*.dmp binary export-ignore
+*.core binary export-ignore
+
+
+# -----------------------------------------------------------------------------
+# Diff and patch files
+# Preserve exact contents for patches.
+# -----------------------------------------------------------------------------
+*.diff -text
+*.patch -text
+
+
+# -----------------------------------------------------------------------------
+# Archives and compressed files
+# -----------------------------------------------------------------------------
+*.zip binary
+*.tar binary
+*.gz binary
+*.tgz binary
+*.tbz2 binary
+*.txz binary
+*.tzst binary
+*.zst binary
+*.lz4 binary
+*.lzma binary
+*.xz binary
+*.bz2 binary
+*.7z binary
+*.rar binary
+*.iso binary
+*.dmg binary
+*.img binary
+
+
+# -----------------------------------------------------------------------------
+# Images and design binaries
+# SVG is text; compressed SVG is binary.
+# -----------------------------------------------------------------------------
+*.png binary
+*.apng binary
+*.jpg binary
+*.jpeg binary
+*.jpe binary
+*.jfif binary
+*.gif binary
+*.bmp binary
+*.dib binary
+*.ico binary
+*.icns binary
+*.webp binary
+*.avif binary
+*.heic binary
+*.heif binary
+*.tif binary
+*.tiff binary
+*.psd binary
+*.psb binary
+*.ai binary
+*.eps binary
+*.ps binary
+*.svg text eol=lf
+*.svgz binary
+*.xcf binary
+*.kra binary
+*.sketch binary
+*.fig binary
+*.blend binary
+*.fbx binary
+*.glb binary
+*.gltf text eol=lf
+
+
+# -----------------------------------------------------------------------------
+# Fonts
+# -----------------------------------------------------------------------------
+*.ttf binary
+*.ttc binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.eot binary
+*.fon binary
+*.fnt binary
+
+
+# -----------------------------------------------------------------------------
+# Audio and video
+# -----------------------------------------------------------------------------
+*.mp4 binary
+*.m4v binary
+*.mov binary
+*.avi binary
+*.mkv binary
+*.webm binary
+*.wmv binary
+*.flv binary
+*.ogv binary
+*.mpg binary
+*.mpeg binary
+*.3gp binary
+*.3g2 binary
+
+*.mp3 binary
+*.wav binary
+*.flac binary
+*.aac binary
+*.m4a binary
+*.ogg binary
+*.oga binary
+*.opus binary
+*.mid binary
+*.midi binary
+*.wma binary
+*.aiff binary
+*.aif binary
+
+
+# -----------------------------------------------------------------------------
+# Office and document binaries
+# -----------------------------------------------------------------------------
+*.doc binary
+*.docx binary
+*.dot binary
+*.dotx binary
+*.docm binary
+*.dotm binary
+
+*.xls binary
+*.xlsx binary
+*.xlsm binary
+*.xlsb binary
+*.xlt binary
+*.xltx binary
+*.xltm binary
+*.xla binary
+*.xlam binary
+
+*.ppt binary
+*.pptx binary
+*.pptm binary
+*.pot binary
+*.potx binary
+*.potm binary
+*.pps binary
+*.ppsx binary
+*.ppsm binary
+
+*.odt binary
+*.ods binary
+*.odp binary
+*.odg binary
+*.odb binary
+*.odm binary
+*.ott binary
+*.ots binary
+*.otp binary
+*.otg binary
+
+*.rtf binary
+*.epub binary
+*.mobi binary
+*.azw binary
+*.azw3 binary
+
+
+# -----------------------------------------------------------------------------
+# Executables, libraries, and compiled objects
+# -----------------------------------------------------------------------------
+*.exe binary
+*.dll binary
+*.so binary
+*.dylib binary
+*.a binary
+*.o binary
+*.obj binary
+*.lib binary
+*.pdb binary
+*.ilk binary
+*.exp binary
+*.idb binary
+
+*.class binary
+*.jar binary
+*.war binary
+*.ear binary
+
+*.apk binary
+*.aab binary
+*.ipa binary
+*.deb binary
+*.rpm binary
+*.msi binary
+*.appx binary
+*.node binary
+
+
+# -----------------------------------------------------------------------------
+# Virtual environments
+# -----------------------------------------------------------------------------
+.venv export-ignore
+.venv/** binary linguist-vendored=true export-ignore
+
+venv export-ignore
+venv/** binary linguist-vendored=true export-ignore
+
+env export-ignore
+env/** binary linguist-vendored=true export-ignore
+
+
+# -----------------------------------------------------------------------------
+# OS/editor junk
+# -----------------------------------------------------------------------------
+.DS_Store binary export-ignore
+Thumbs.db binary export-ignore
+desktop.ini binary export-ignore
+*.lnk binary export-ignore
+*.swp binary export-ignore
+*.swo binary export-ignore

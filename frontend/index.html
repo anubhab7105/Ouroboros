@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en" class="h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta
+      name="description"
+      content="MULEGUARD: mule-account detection and financial-crime investigation platform."
+    />
+    <meta name="color-scheme" content="light dark" />
+    <title>MULEGUARD</title>
+    <script>
+      // Apply the stored theme before first paint so a dark-mode user never
+      // sees a white flash on load.
+      (function () {
+        try {
+          var stored = localStorage.getItem('muleguard.theme');
+          var prefersDark =
+            window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (stored === 'dark' || (stored !== 'light' && prefersDark)) {
+            document.documentElement.classList.add('dark');
+          }
+        } catch (e) {
+          /* private mode or blocked storage: fall through to light */
+        }
+      })();
+    </script>
+  </head>
+  <body class="h-full bg-ink-50 text-ink-900 antialiased dark:bg-ink-950 dark:text-ink-100">
+    <div id="root" class="h-full"></div>
+    <noscript>
+      <div style="padding: 2rem; font-family: sans-serif">
+        MULEGUARD requires JavaScript. The investigation dashboard is an
+        interactive application and cannot be rendered without it.
+      </div>
+    </noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

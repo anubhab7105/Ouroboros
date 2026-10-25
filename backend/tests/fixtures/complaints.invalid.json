@@ -1,0 +1,77 @@
+{
+  "description": "Complaint records that must be rejected, each with the reason.",
+  "cases": [
+    {
+      "name": "missing_reference",
+      "why": "reference is required and unique. It is the complaint's identity in the originating system; without it the same complaint re-ingested becomes two.",
+      "field": "reference",
+      "record": {
+        "reported_at": "2025-11-14T05:40:00Z",
+        "narrative_raw": "Unrecognised debit."
+      }
+    },
+    {
+      "name": "missing_reported_at",
+      "why": "reported_at is required. The correlation window is anchored on it, so a complaint with no date cannot be matched to activity at all.",
+      "field": "reported_at",
+      "record": {
+        "reference": "CMP-X-0002",
+        "narrative_raw": "Unrecognised debit."
+      }
+    },
+    {
+      "name": "empty_narrative",
+      "why": "narrative_raw has a minimum length of one. An empty narrative is indistinguishable from a truncation or an extraction failure upstream.",
+      "field": "narrative_raw",
+      "record": {
+        "reference": "CMP-X-0003",
+        "reported_at": "2025-11-14T05:40:00Z",
+        "narrative_raw": ""
+      }
+    },
+    {
+      "name": "zero_amount",
+      "why": "amount is optional but must be greater than zero when present. A zero loss is better expressed by omitting the field.",
+      "field": "amount",
+      "record": {
+        "reference": "CMP-X-0004",
+        "reported_at": "2025-11-14T05:40:00Z",
+        "narrative_raw": "Unrecognised debit.",
+        "amount": 0
+      }
+    },
+    {
+      "name": "currency_without_amount_wrong_length",
+      "why": "currency must be a three-letter code when present.",
+      "field": "currency",
+      "record": {
+        "reference": "CMP-X-0005",
+        "reported_at": "2025-11-14T05:40:00Z",
+        "narrative_raw": "Unrecognised debit.",
+        "amount": 1000,
+        "currency": "RUPEE"
+      }
+    },
+    {
+      "name": "unknown_victim_account",
+      "why": "victim_account_id is a foreign key. A complaint naming an account the ledger does not hold is a real situation — the account may be at another bank — and the correct handling is to leave the field empty, not to invent the account.",
+      "field": "victim_account_id",
+      "record": {
+        "reference": "CMP-X-0006",
+        "reported_at": "2025-11-14T05:40:00Z",
+        "narrative_raw": "Unrecognised debit.",
+        "victim_account_id": "ACC-DOES-NOT-EXIST"
+      }
+    },
+    {
+      "name": "reported_at_in_the_future",
+      "why": "A complaint cannot be filed after now beyond clock skew. A future-dated complaint would open a correlation window over activity that has not happened.",
+      "field": "reported_at",
+      "record": {
+        "reference": "CMP-X-0007",
+        "reported_at": "2099-01-01T00:00:00Z",
+        "narrative_raw": "Unrecognised debit."
+      }
+    }
+  ]
+}

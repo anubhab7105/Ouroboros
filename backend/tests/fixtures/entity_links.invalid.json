@@ -1,0 +1,89 @@
+{
+  "description": "Entity-link records that must be rejected, each with the reason.",
+  "cases": [
+    {
+      "name": "confidence_above_one",
+      "why": "confidence is constrained to the closed interval [0, 1]. A value above one is not a stronger match; it is a scale error, and it would sort above every genuine match.",
+      "field": "confidence",
+      "record": {
+        "account_id": "ACC-V-01",
+        "entity_id": "ENT-V-01",
+        "match_method": "NORMALIZED",
+        "confidence": 1.4
+      }
+    },
+    {
+      "name": "confidence_as_percentage",
+      "why": "The same error in its commonest form: 88 meaning 88%. Silently dividing by a hundred would be a guess about the caller's intent.",
+      "field": "confidence",
+      "record": {
+        "account_id": "ACC-V-01",
+        "entity_id": "ENT-V-01",
+        "match_method": "NORMALIZED",
+        "confidence": 88
+      }
+    },
+    {
+      "name": "negative_confidence",
+      "why": "confidence has a lower bound of zero.",
+      "field": "confidence",
+      "record": {
+        "account_id": "ACC-V-01",
+        "entity_id": "ENT-V-01",
+        "match_method": "NORMALIZED",
+        "confidence": -0.2
+      }
+    },
+    {
+      "name": "unknown_match_method",
+      "why": "match_method is an enum, and it is what decides whether a link is deterministic. An unrecognised method cannot be classified either way, and the interface would have to guess how to present it. Note that the normalizer aliases several informal names onto canonical ones -- FUZZY and HEURISTIC both become NORMALIZED, HASHED becomes EXACT -- so a case testing rejection has to use a name with no honest destination.",
+      "field": "match_method",
+      "record": {
+        "account_id": "ACC-V-01",
+        "entity_id": "ENT-V-01",
+        "match_method": "SEEMS_RELATED"
+      }
+    },
+    {
+      "name": "unknown_verification_state",
+      "why": "verification_state is an enum.",
+      "field": "verification_state",
+      "record": {
+        "account_id": "ACC-V-01",
+        "entity_id": "ENT-V-01",
+        "verification_state": "PROBABLY_FINE"
+      }
+    },
+    {
+      "name": "missing_account_id",
+      "why": "Both ends of the link are required. A link to nothing is not a weaker link; it is not a link.",
+      "field": "account_id",
+      "record": {
+        "entity_id": "ENT-V-01",
+        "match_method": "EXACT"
+      }
+    },
+    {
+      "name": "unknown_entity",
+      "why": "entity_id is a foreign key. The entity must be ingested before anything links to it.",
+      "field": "entity_id",
+      "record": {
+        "account_id": "ACC-V-01",
+        "entity_id": "ENT-DOES-NOT-EXIST",
+        "match_method": "EXACT"
+      }
+    },
+    {
+      "name": "valid_to_before_valid_from",
+      "why": "A link cannot stop being true before it started. Reversed bounds would make the interval empty, and a point-in-time query over it would silently return nothing.",
+      "field": "valid_to",
+      "record": {
+        "account_id": "ACC-V-01",
+        "entity_id": "ENT-V-01",
+        "match_method": "EXACT",
+        "valid_from": "2025-06-01T00:00:00Z",
+        "valid_to": "2024-06-01T00:00:00Z"
+      }
+    }
+  ]
+}

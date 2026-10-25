@@ -1,0 +1,70 @@
+{
+  "description": "Five links. Two deterministic, three inferred. The shared device is what connects the collector to the pass-through account, and the validity bounds are what make that connection mean something: the same device two years apart is not a relationship.",
+  "records": [
+    {
+      "account_id": "ACC-S-COLLECTOR",
+      "entity_id": "ENT-S-DEVICE-01",
+      "match_method": "EXACT",
+      "verification_state": "VERIFIED",
+      "valid_from": "2026-04-02T07:15:00Z",
+      "source": "sample",
+      "metadata_json": {
+        "note": "No confidence field. The identifier came from the account record itself, so this is an observation."
+      }
+    },
+    {
+      "account_id": "ACC-S-MIDDLE",
+      "entity_id": "ENT-S-DEVICE-01",
+      "match_method": "EXACT",
+      "verification_state": "VERIFIED",
+      "valid_from": "2026-03-28T16:22:00Z",
+      "source": "sample",
+      "metadata_json": {
+        "note": "The same device as the collector, in an overlapping window. This single pair is what turns two accounts into a component in the graph view."
+      }
+    },
+    {
+      "account_id": "ACC-S-SENDER-01",
+      "entity_id": "ENT-S-IP-01",
+      "match_method": "NORMALIZED",
+      "confidence": 0.74,
+      "verification_state": "NEEDS_REVIEW",
+      "valid_from": "2026-04-13T02:00:00Z",
+      "valid_to": "2026-04-13T23:59:00Z",
+      "source": "sample",
+      "metadata_json": {
+        "note": "A shared IP inside one day. Weak on its own -- a carrier NAT puts thousands of unrelated people behind one address -- which is why it is inferred, scored, and waiting on a person."
+      }
+    },
+    {
+      "account_id": "ACC-S-SENDER-02",
+      "entity_id": "ENT-S-IP-01",
+      "match_method": "NORMALIZED",
+      "confidence": 0.74,
+      "verification_state": "NEEDS_REVIEW",
+      "valid_from": "2026-04-13T02:00:00Z",
+      "valid_to": "2026-04-13T23:59:00Z",
+      "source": "sample",
+      "metadata_json": {
+        "note": "The other end of the same weak link."
+      }
+    },
+    {
+      "account_id": "ACC-S-HARD-NEGATIVE",
+      "entity_id": "ENT-S-IP-01",
+      "match_method": "NORMALIZED",
+      "confidence": 0.31,
+      "verification_state": "REJECTED",
+      "valid_from": "2026-04-13T02:00:00Z",
+      "valid_to": "2026-04-13T23:59:00Z",
+      "source": "sample",
+      "metadata_json": {
+        "note": "Rejected by a reviewer. It stays in the table rather than being deleted: the fact that somebody looked and said no is worth more than a clean table, and it stops the same inference being re-raised next week."
+      }
+    }
+  ],
+  "options": {
+    "source_system": "sample",
+    "source_batch_id": "entity-links-sample-001"
+  }
+}

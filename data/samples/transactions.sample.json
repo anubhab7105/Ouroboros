@@ -1,0 +1,261 @@
+{
+  "description": "Twenty transfers over one day. Twelve into the collector, a pass-through pair, a dormant reactivation, and five ordinary transfers that should move nothing. Amounts are strings so the file survives a round trip through a JSON parser that would otherwise turn 24000.00 into a float.",
+  "records": [
+    {
+      "reference": "TXN-S-FANIN-01",
+      "sender_account_id": "ACC-S-SENDER-01",
+      "receiver_account_id": "ACC-S-COLLECTOR",
+      "amount": "24000.00",
+      "currency": "INR",
+      "occurred_at": "2026-04-13T02:00:00Z",
+      "status": "COMPLETED",
+      "channel": "UPI",
+      "metadata_json": {
+        "shape": "fan_in"
+      }
+    },
+    {
+      "reference": "TXN-S-FANIN-02",
+      "sender_account_id": "ACC-S-SENDER-02",
+      "receiver_account_id": "ACC-S-COLLECTOR",
+      "amount": "24137.00",
+      "currency": "INR",
+      "occurred_at": "2026-04-13T02:07:00Z",
+      "status": "COMPLETED",
+      "channel": "UPI",
+      "metadata_json": {}
+    },
+    {
+      "reference": "TXN-S-FANIN-03",
+      "sender_account_id": "ACC-S-SENDER-01",
+      "receiver_account_id": "ACC-S-COLLECTOR",
+      "amount": "24274.00",
+      "currency": "INR",
+      "occurred_at": "2026-04-13T02:14:00Z",
+      "status": "COMPLETED",
+      "channel": "UPI",
+      "metadata_json": {}
+    },
+    {
+      "reference": "TXN-S-FANIN-04",
+      "sender_account_id": "ACC-S-SENDER-02",
+      "receiver_account_id": "ACC-S-COLLECTOR",
+      "amount": "24411.00",
+      "currency": "INR",
+      "occurred_at": "2026-04-13T03:21:00Z",
+      "status": "COMPLETED",
+      "channel": "UPI",
+      "metadata_json": {}
+    },
+    {
+      "reference": "TXN-S-FANIN-05",
+      "sender_account_id": "ACC-S-SENDER-01",
+      "receiver_account_id": "ACC-S-COLLECTOR",
+      "amount": "24548.00",
+      "currency": "INR",
+      "occurred_at": "2026-04-13T03:28:00Z",
+      "status": "COMPLETED",
+      "channel": "UPI",
+      "metadata_json": {}
+    },
+    {
+      "reference": "TXN-S-FANIN-06",
+      "sender_account_id": "ACC-S-SENDER-02",
+      "receiver_account_id": "ACC-S-COLLECTOR",
+      "amount": "24685.00",
+      "currency": "INR",
+      "occurred_at": "2026-04-13T03:35:00Z",
+      "status": "COMPLETED",
+      "channel": "UPI",
+      "metadata_json": {}
+    },
+    {
+      "reference": "TXN-S-FANIN-07",
+      "sender_account_id": "ACC-S-SENDER-01",
+      "receiver_account_id": "ACC-S-COLLECTOR",
+      "amount": "24822.00",
+      "currency": "INR",
+      "occurred_at": "2026-04-13T04:42:00Z",
+      "status": "COMPLETED",
+      "channel": "UPI",
+      "metadata_json": {}
+    },
+    {
+      "reference": "TXN-S-FANIN-08",
+      "sender_account_id": "ACC-S-SENDER-02",
+      "receiver_account_id": "ACC-S-COLLECTOR",
+      "amount": "24959.00",
+      "currency": "INR",
+      "occurred_at": "2026-04-13T04:49:00Z",
+      "status": "COMPLETED",
+      "channel": "UPI",
+      "metadata_json": {}
+    },
+    {
+      "reference": "TXN-S-FANIN-09",
+      "sender_account_id": "ACC-S-SENDER-01",
+      "receiver_account_id": "ACC-S-COLLECTOR",
+      "amount": "25096.00",
+      "currency": "INR",
+      "occurred_at": "2026-04-13T04:56:00Z",
+      "status": "COMPLETED",
+      "channel": "UPI",
+      "metadata_json": {}
+    },
+    {
+      "reference": "TXN-S-FANIN-10",
+      "sender_account_id": "ACC-S-SENDER-02",
+      "receiver_account_id": "ACC-S-COLLECTOR",
+      "amount": "25233.00",
+      "currency": "INR",
+      "occurred_at": "2026-04-13T05:03:00Z",
+      "status": "COMPLETED",
+      "channel": "UPI",
+      "metadata_json": {}
+    },
+    {
+      "reference": "TXN-S-FANIN-11",
+      "sender_account_id": "ACC-S-SENDER-01",
+      "receiver_account_id": "ACC-S-COLLECTOR",
+      "amount": "25370.00",
+      "currency": "INR",
+      "occurred_at": "2026-04-13T05:10:00Z",
+      "status": "COMPLETED",
+      "channel": "UPI",
+      "metadata_json": {}
+    },
+    {
+      "reference": "TXN-S-FANIN-12",
+      "sender_account_id": "ACC-S-SENDER-02",
+      "receiver_account_id": "ACC-S-COLLECTOR",
+      "amount": "25507.00",
+      "currency": "INR",
+      "occurred_at": "2026-04-13T05:17:00Z",
+      "status": "COMPLETED",
+      "channel": "UPI",
+      "metadata_json": {}
+    },
+    {
+      "reference": "TXN-S-PASSTHROUGH-IN",
+      "sender_account_id": "ACC-S-COLLECTOR",
+      "receiver_account_id": "ACC-S-MIDDLE",
+      "amount": "200000.00",
+      "currency": "INR",
+      "occurred_at": "2026-04-13T09:40:00Z",
+      "status": "COMPLETED",
+      "channel": "IMPS",
+      "metadata_json": {
+        "shape": "pass_through_in"
+      }
+    },
+    {
+      "reference": "TXN-S-PASSTHROUGH-OUT",
+      "sender_account_id": "ACC-S-MIDDLE",
+      "receiver_account_id": "ACC-S-DESTINATION",
+      "amount": "196000.00",
+      "currency": "INR",
+      "occurred_at": "2026-04-13T09:51:00Z",
+      "status": "COMPLETED",
+      "channel": "IMPS",
+      "metadata_json": {
+        "shape": "pass_through_out",
+        "note": "Eleven minutes and two percent retained. The hold time and the remainder are what distinguish this from an account that forwards a payment for an ordinary reason."
+      }
+    },
+    {
+      "reference": "TXN-S-DORMANT-WAKE",
+      "sender_account_id": "ACC-S-SENDER-02",
+      "receiver_account_id": "ACC-S-DORMANT",
+      "amount": "48000.00",
+      "currency": "INR",
+      "occurred_at": "2026-04-13T11:02:00Z",
+      "status": "COMPLETED",
+      "channel": "NEFT",
+      "metadata_json": {
+        "shape": "dormant_reactivation"
+      }
+    },
+    {
+      "reference": "TXN-S-PENDING",
+      "sender_account_id": "ACC-S-SENDER-01",
+      "receiver_account_id": "ACC-S-DESTINATION",
+      "amount": "95000.00",
+      "currency": "INR",
+      "occurred_at": "2026-04-13T12:15:00Z",
+      "status": "PENDING",
+      "channel": "RTGS",
+      "metadata_json": {
+        "note": "Counted separately from completed movement. A pass-through measured over pending transfers would describe money that never moved."
+      }
+    },
+    {
+      "reference": "TXN-S-FAILED",
+      "sender_account_id": "ACC-S-SENDER-02",
+      "receiver_account_id": "ACC-S-COLLECTOR",
+      "amount": "31000.00",
+      "currency": "INR",
+      "occurred_at": "2026-04-13T12:48:00Z",
+      "status": "FAILED",
+      "channel": "UPI",
+      "metadata_json": {
+        "note": "Must not count toward the collector's inflow. A failed transfer in an aggregate is an inflated throughput signal."
+      }
+    },
+    {
+      "reference": "TXN-S-REVERSED",
+      "sender_account_id": "ACC-S-COLLECTOR",
+      "receiver_account_id": "ACC-S-SENDER-01",
+      "amount": "24000.00",
+      "currency": "INR",
+      "occurred_at": "2026-04-13T13:30:00Z",
+      "status": "REVERSED",
+      "channel": "UPI",
+      "metadata_json": {
+        "note": "Money came back. Netting it against the inflow would be a judgement; counting it separately is a fact."
+      }
+    },
+    {
+      "reference": "TXN-S-SELF",
+      "sender_account_id": "ACC-S-MIDDLE",
+      "receiver_account_id": "ACC-S-MIDDLE",
+      "amount": "5000.00",
+      "currency": "INR",
+      "occurred_at": "2026-04-13T14:05:00Z",
+      "status": "COMPLETED",
+      "channel": "INTERNAL",
+      "metadata_json": {
+        "note": "A self-transfer. Excluded from counterparty counts: an account is not its own counterparty, and including it would inflate the fan-out of anyone who moves money between their own accounts."
+      }
+    },
+    {
+      "reference": "TXN-S-FOREIGN-CURRENCY",
+      "sender_account_id": "ACC-S-DESTINATION",
+      "receiver_account_id": "ACC-S-HARD-NEGATIVE",
+      "amount": "1200.00",
+      "currency": "USD",
+      "occurred_at": "2026-04-13T15:20:00Z",
+      "status": "COMPLETED",
+      "channel": "NEFT",
+      "metadata_json": {
+        "note": "A second currency. Per-currency totals are never summed: there is no rate in this system, and adding rupees to dollars would produce a number with no meaning that still sorts."
+      }
+    },
+    {
+      "reference": "TXN-S-MERCHANT-SETTLEMENT",
+      "sender_account_id": "ACC-S-HARD-NEGATIVE",
+      "receiver_account_id": "ACC-S-DESTINATION",
+      "amount": "418000.00",
+      "currency": "INR",
+      "occurred_at": "2026-04-13T18:00:00Z",
+      "status": "COMPLETED",
+      "channel": "RTGS",
+      "metadata_json": {
+        "note": "The hard negative's daily settlement: large, regular, one counterparty. High value alone is not a signal."
+      }
+    }
+  ],
+  "options": {
+    "source_system": "sample",
+    "source_batch_id": "transactions-sample-001"
+  }
+}

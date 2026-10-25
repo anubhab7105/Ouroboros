@@ -1,0 +1,44 @@
+%% How a record becomes a scored account.
+%%
+%% The two things worth following: every step that could silently substitute a
+%% value reports instead, and the as_of cutoff is carried the whole way.
+
+flowchart LR
+    SRC["JSON batch<br/>records + options"]
+
+    subgraph ingestion["Ingestion"]
+        NORM["normalize<br/>aliases, Unicode, decimals"]
+        VAL["validate<br/>enums, bounds, foreign keys"]
+        DEDUP["dedupe<br/>natural key"]
+        PROV["provenance<br/>source_system, batch, hash"]
+    end
+
+    DB[("Database")]
+
+    subgraph analysis["Analysis run (as_of)"]
+        FEAT["feature snapshot<br/>strictly before as_of"]
+        RULEPASS["rule evaluation"]
+        SCORE["model or fallback"]
+        GRAPHSIG["graph signals<br/>bounded"]
+        CORRSIG["complaint correlations"]
+        FUSE["risk fusion<br/>weighted, per-component"]
+    end
+
+    ASSESS["assessment<br/>score, band, components,<br/>caveats, evidence refs"]
+    ALERT["alert<br/>if score >= threshold<br/>or a rule says escalate"]
+    CASE["case<br/>opened by a person"]
+
+    SRC --> NORM --> VAL --> DEDUP --> PROV --> DB
+    VAL -.->|"rejected rows,<br/>with index and reason"| SRC
+
+    DB --> FEAT --> RULEPASS --> FUSE
+    FEAT --> SCORE --> FUSE
+    DB --> GRAPHSIG --> FUSE
+    DB --> CORRSIG --> FUSE
+    FUSE --> ASSESS --> ALERT --> CASE
+
+    GRAPHSIG -.->|"truncated:<br/>reported, not silently cut"| FUSE
+    SCORE -.->|"unavailable:<br/>reported, not zero"| FUSE
+
+    classDef honest fill:#fdf6e9,stroke:#8a6d1f
+    class FUSE,ASSESS honest

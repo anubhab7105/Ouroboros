@@ -1,0 +1,22 @@
+{
+  "id": "hard_negative",
+  "label": "Busy merchant (not a mule)",
+  "description": "A small merchant with many inbound payments from many distinct payers. Trips a naive fan-in count and is entirely legitimate. Present so the suite can measure what it costs to be wrong.",
+  "parameters": {
+    "counterparties": 14,
+    "amount": 22000,
+    "days_between": 6,
+    "channel": "CARD",
+    "account_type": "MERCHANT"
+  },
+  "expected": {
+    "rule_codes": [],
+    "max_risk_band": "MEDIUM",
+    "ground_truth_label": false,
+    "scenario_type": "legitimate_merchant"
+  },
+  "confounders": [
+    "Nothing here is a confounder: this scenario is itself the confounder for fan_in.json, and it is in the suite to be got right rather than detected."
+  ],
+  "notes": "Two features separate this from a collection account, and a detector that uses neither is counting popularity. First, the spread: fourteen payers over three months, not twelve in six hours — the window is what carries the signal. Second, retention: the money stays in the account rather than being forwarded within minutes.\n\nThe expectation is written as `max_risk_band` rather than an exact score, and MEDIUM rather than LOW. A merchant with this profile genuinely does have some features in common with a collector, and a platform that scored it zero would be claiming a confidence it has not earned. What must not happen is an alert: a MEDIUM score with no rule hits is the system saying 'nothing here', which is the honest answer.\n\nIf a change makes this scenario produce an alert, the change has raised the false-positive rate, whatever it did for recall. That trade is sometimes right — but it should be made deliberately, by someone who has read this file, and not discovered later by an analyst who has stopped trusting the queue."
+}

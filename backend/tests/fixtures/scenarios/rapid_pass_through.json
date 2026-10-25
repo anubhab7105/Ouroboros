@@ -1,0 +1,22 @@
+{
+  "id": "rapid_pass_through",
+  "label": "Rapid pass-through",
+  "description": "Money arrives and almost all of it leaves again, quickly. The account is a conduit rather than a destination. Measured as the ratio of what left to what arrived over a short window, together with the holding time between the two.",
+  "parameters": {
+    "amount": 200000,
+    "retained_fraction": 0.02,
+    "minutes_held": 11
+  },
+  "expected": {
+    "rule_codes": ["HIGH_THROUGHPUT", "SHORT_HOLDING_TIME"],
+    "min_risk_band": "HIGH",
+    "ground_truth_label": true,
+    "scenario_type": "pass_through"
+  },
+  "confounders": [
+    "A pooled or escrow account doing exactly its job: receive, forward, keep nothing. Structurally identical and completely ordinary.",
+    "A person moving their salary to a savings account on the day it arrives.",
+    "A business sweeping its receipts to a treasury account each evening."
+  ],
+  "notes": "The retained 2% is the part that distinguishes this from a sweep. A person moving their own money forwards all of it or a round remainder; a conduit keeps a commission. That is a signal and not a proof — a 2% remainder can be a bank charge — which is why the explanation must state the measured ratio rather than announce a conclusion."
+}

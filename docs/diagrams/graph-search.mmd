@@ -1,0 +1,33 @@
+%% Bounded traversal over the transaction graph.
+%%
+%% Every traversal has a hop limit, a node budget and a time budget, and a
+%% truncated result says so. See docs/adr/accepted/0007.
+%%
+%% The invariant worth stating: a truncated traversal establishes nothing. If
+%% the search was cut off, "no path found" means "no path found within the
+%% budget", and the response says which -- because an investigator who reads
+%% an exhausted search as an exhaustive one has drawn a conclusion the data
+%% does not support.
+
+flowchart TB
+    START(["seed account"])
+    INIT["frontier = {seed}<br/>visited = {}<br/>hops = 0"]
+
+    CHECK{"budget left?<br/>hops < max_hops<br/>visited < max_nodes<br/>elapsed < max_ms"}
+
+    EXPAND["expand the frontier<br/>completed transfers only,<br/>inside the date window"]
+    FILTER["drop self-transfers<br/>drop already-visited"]
+    ADD["add to visited<br/>record the edge"]
+
+    TRUNC["mark truncated<br/>record which budget was hit"]
+    DONE["complete traversal"]
+
+    RESULT["subgraph<br/>nodes, edges,<br/>truncated: true | false,<br/>limit_hit: hops | nodes | time"]
+
+    START --> INIT --> CHECK
+    CHECK -->|yes| EXPAND --> FILTER --> ADD --> CHECK
+    CHECK -->|"no -- budget exhausted"| TRUNC --> RESULT
+    CHECK -->|"no -- frontier empty"| DONE --> RESULT
+
+    classDef honest fill:#fdf6e9,stroke:#8a6d1f
+    class TRUNC,RESULT honest

@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://muleguard.local/schemas/batch-response.schema.json",
+  "title": "batch-response",
+  "description": "What every ingestion endpoint returns.\n\nThe four counts are disjoint and together account for every submitted record: accepted + rejected + duplicated + skipped == submitted. A loader can check that arithmetic and know nothing was silently dropped, which is the one thing a bulk import has to be able to establish.\n\n`errors` carries one entry per rejected row, with its index, so a caller can fix the file rather than bisect it. Narratives, secrets and raw identifiers never appear in it.",
+  "type": "object",
+  "required": [
+    "ok",
+    "entity_type",
+    "accepted",
+    "rejected",
+    "duplicated",
+    "skipped"
+  ],
+  "properties": {
+    "ok": {
+      "type": "boolean",
+      "description": "False when anything was rejected, even if the batch was partially applied. A caller that checks only the HTTP status would otherwise treat a half-loaded batch as a success."
+    },
+    "entity_type": {
+      "type": "string",
+      "enum": [
+        "accounts",
+        "complaints",
+        "entities",
+        "entity_links",
+        "transactions"
+      ]
+    },
+    "accepted": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "rejected": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "duplicated": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Records whose natural key already existed. Counted apart from rejected, because a re-run of the same file is a normal event and should not read as a failure."
+    },
+    "skipped": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "dry_run": {
+      "type": "boolean"
+    },
+    "allow_partial": {
+      "type": "boolean"
+    },
+    "on_duplicate": {
+      "type": "string",
+      "enum": [
+        "reject",
+        "skip"
+      ]
+    },
+    "source_system": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source_batch_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "request_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "index",
+          "code",
+          "message"
+        ],
+        "properties": {
+          "index": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Position in the submitted array, zero-based."
+          },
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "field": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "caveats": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

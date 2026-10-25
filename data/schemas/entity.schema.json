@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://muleguard.local/schemas/entity.schema.json",
+  "title": "entity",
+  "description": "One pseudonymous shared identifier.\n\nIdentifiers reach this table as salted hashes and the raw values are never stored. The `_HASH` suffixes in entity_type are that design, not a naming habit. identifier_display holds a masked form for an interface to show, which is why it may exist alongside the hash.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "entity_type",
+    "identifier_hash"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$",
+      "maxLength": 64
+    },
+    "entity_type": {
+      "type": "string",
+      "enum": [
+        "DEVICE",
+        "PHONE_HASH",
+        "UPI_ID",
+        "EMAIL_HASH",
+        "ADDRESS_HASH",
+        "IP_HASH",
+        "OTHER"
+      ]
+    },
+    "identifier_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{32,128}$",
+      "description": "Lowercase hex, 32 to 128 characters. A value that is not a hash is refused: accepting one would put a raw phone number into the column every downstream consumer treats as safe."
+    },
+    "identifier_display": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 100,
+      "description": "A masked, non-reversible label for display, such as '+91-****-****1234'. Optional, and never reconstructible."
+    },
+    "source": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 100
+    },
+    "first_seen_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "last_seen_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "metadata_json": {
+      "type": "object",
+      "description": "Free-form synthetic context. Sanitised on ingestion: keys that look like secrets, tokens, raw identifiers, ground-truth labels, scenario ids or ring ids are dropped rather than stored."
+    }
+  }
+}

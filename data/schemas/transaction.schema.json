@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://muleguard.local/schemas/transaction.schema.json",
+  "title": "transaction",
+  "description": "One synthetic transfer between two accounts already present in the system.\n\nBoth account columns are foreign keys: a transfer naming an unknown account is refused rather than creating one, because an account conjured from a transfer has no opening date, type or status and would score as a brand-new account forever.\n\nOnly COMPLETED is settled fund movement. Every monetary aggregate in the platform counts COMPLETED alone, and amounts are never summed across currencies.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "reference",
+    "sender_account_id",
+    "receiver_account_id",
+    "amount",
+    "occurred_at"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$",
+      "maxLength": 64
+    },
+    "reference": {
+      "type": "string",
+      "maxLength": 128,
+      "minLength": 1,
+      "description": "The transfer's identity in the outside world, and unique. It is how a complaint naming a transaction is matched to one, which is the whole of tier-1 correlation."
+    },
+    "sender_account_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$",
+      "maxLength": 64
+    },
+    "receiver_account_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$",
+      "maxLength": 64
+    },
+    "amount": {
+      "type": [
+        "number",
+        "string",
+        "null"
+      ],
+      "description": "Positive. Direction is carried by the sender and receiver columns, not by the sign, and a negative amount would be counted as a negative inflow. Accepted as a string so a caller can avoid float rounding; stored as a decimal."
+    },
+    "currency": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[A-Z]{3}$",
+      "default": "INR"
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Required. Every window, rate and velocity feature is defined relative to it, and a transfer with no time cannot be placed in a window at all."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "PENDING",
+        "COMPLETED",
+        "FAILED",
+        "REVERSED"
+      ],
+      "default": "COMPLETED"
+    },
+    "channel": {
+      "type": "string",
+      "enum": [
+        "UPI",
+        "IMPS",
+        "NEFT",
+        "RTGS",
+        "CARD",
+        "INTERNAL"
+      ],
+      "default": "INTERNAL"
+    },
+    "metadata_json": {
+      "type": "object",
+      "description": "Free-form synthetic context. Sanitised on ingestion: keys that look like secrets, tokens, raw identifiers, ground-truth labels, scenario ids or ring ids are dropped rather than stored."
+    }
+  }
+}

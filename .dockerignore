@@ -1,0 +1,257 @@
+# =============================================================================
+# MULEGUARD root .dockerignore
+# -----------------------------------------------------------------------------
+# Purpose:
+# - Keep the Docker build context small and fast
+# - Prevent secrets, local databases, caches, and generated artifacts from
+#   being copied into images
+# - Keep runtime images clean and deterministic
+#
+# Important:
+# Docker uses the .dockerignore file at the root of the build context.
+# If your docker-compose.yml uses:
+#
+#   build:
+#     context: .
+#     dockerfile: backend/Dockerfile
+#
+# then this root .dockerignore is used.
+#
+# If your compose file uses:
+#
+#   build: ./backend
+#
+# then Docker will use backend/.dockerignore instead.
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# 1. Version control, CI, IDE, and OS metadata
+# -----------------------------------------------------------------------------
+.git
+.gitignore
+.gitattributes
+.github
+.idea
+.vscode
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+desktop.ini
+
+
+# -----------------------------------------------------------------------------
+# 2. Docker/Compose build metadata
+# These files are useful on the host but are not needed inside runtime images.
+# -----------------------------------------------------------------------------
+.dockerignore
+*/.dockerignore
+*/*/.dockerignore
+Dockerfile
+*/Dockerfile
+*/*/Dockerfile
+docker-compose.yml
+docker-compose.override.yml
+docker-compose.*.yml
+.docker/
+
+
+# -----------------------------------------------------------------------------
+# 3. Environment files, secrets, credentials, certificates
+# Never copy secrets into Docker images.
+# Keep only clearly marked example files.
+# -----------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+
+*.local
+*.secret
+secrets/
+*/secrets/
+*/*/secrets/
+
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.p7b
+*.jks
+*.keystore
+*.asc
+*.gpg
+
+id_rsa*
+id_ed25519*
+
+.aws/
+.gcloud/
+.azure/
+service-account*.json
+*credentials*.json
+
+
+# -----------------------------------------------------------------------------
+# 4. Python caches, virtual environments, and test artifacts
+# -----------------------------------------------------------------------------
+__pycache__/
+*/__pycache__/
+*/*/__pycache__/
+*/*/*/__pycache__/
+*/*/*/*/__pycache__/
+
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+.venv/
+venv/
+env/
+*/.venv/
+*/venv/
+*/env/
+*/*/.venv/
+*/*/venv/
+*/*/env/
+
+*.egg-info/
+
+.pytest_cache/
+*/.pytest_cache/
+*/*/.pytest_cache/
+
+.mypy_cache/
+*/.mypy_cache/
+
+.ruff_cache/
+*/.ruff_cache/
+
+.coverage
+coverage.xml
+htmlcov/
+.tox/
+.nox/
+.cache/
+.pytype/
+
+
+# -----------------------------------------------------------------------------
+# 5. Node.js, frontend dependencies, and frontend build artifacts
+# Frontend dependencies should be installed inside the Docker build.
+# Do not copy host node_modules into the image.
+# -----------------------------------------------------------------------------
+node_modules/
+*/node_modules/
+*/*/node_modules/
+*/*/*/node_modules/
+
+frontend/dist/
+frontend/build/
+frontend/.vite/
+.vite/
+.turbo/
+.next/
+out/
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+
+# -----------------------------------------------------------------------------
+# 6. Local databases, generated data, imports, and backups
+# Keep schemas and samples, but exclude mutable local data.
+# -----------------------------------------------------------------------------
+*.sqlite
+*.sqlite3
+*.db
+*.duckdb
+*.sql.gz
+*.dump
+*.backup
+*.bak
+
+data/generated/
+data/imports/
+backend/data/
+
+
+# -----------------------------------------------------------------------------
+# 7. Machine-learning artifacts
+# Do not copy trained model binaries into the image by default.
+# Keep only documentation and an example manifest.
+# -----------------------------------------------------------------------------
+backend/app/ml/artifacts/*
+!backend/app/ml/artifacts/README.md
+!backend/app/ml/artifacts/model_manifest.example.json
+
+*.joblib
+*.pkl
+*.pickle
+*.onnx
+*.pt
+*.pth
+*.bin
+*.safetensors
+
+
+# -----------------------------------------------------------------------------
+# 8. Reports, logs, and temporary files
+# -----------------------------------------------------------------------------
+reports/
+logs/
+*.log
+tmp/
+temp/
+*.tmp
+*.temp
+
+
+# -----------------------------------------------------------------------------
+# 9. Documentation, project-management files, and host scripts
+# These are useful for developers but are usually not needed in runtime images.
+# -----------------------------------------------------------------------------
+docs/
+README.md
+CHANGELOG.md
+CONTRIBUTING.md
+LICENSE
+Makefile
+PROJECT_TREE.txt
+scripts/
+
+
+# -----------------------------------------------------------------------------
+# 10. Tests and coverage output
+# Tests are important on the host and in CI, but usually not needed in runtime
+# images unless you intentionally build a test image.
+# -----------------------------------------------------------------------------
+backend/tests/
+frontend/src/test/
+frontend/coverage/
+coverage/
+
+__tests__/
+*/__tests__/
+*/*/__tests__/
+*/*/*/__tests__/
+*/*/*/*/__tests__/
+
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx

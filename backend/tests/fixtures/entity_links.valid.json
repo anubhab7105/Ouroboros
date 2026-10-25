@@ -1,0 +1,75 @@
+{
+  "description": "Links between accounts and pseudonymous identifiers. Both columns are foreign keys: load accounts.valid.json first, and create entities ENT-V-01 through ENT-V-03 via /api/v1/ingestion/entities before posting this (there is no entities fixture file, because an entity record is three fields and inventing it in the test is clearer than a file to cross-reference). The last record uses a source system's wording rather than the canonical values, so the alias path is covered here and not only described.",
+  "records": [
+    {
+      "account_id": "ACC-V-01",
+      "entity_id": "ENT-V-01",
+      "match_method": "EXACT",
+      "verification_state": "VERIFIED",
+      "valid_from": "2024-03-14T09:20:00Z",
+      "source": "fixture",
+      "metadata_json": {
+        "note": "Deterministic: the identifier came from the account record itself. No confidence, because certainty about an exact match is a different kind of thing from a probability and showing it as 1.000 invites comparison with 0.94."
+      }
+    },
+    {
+      "account_id": "ACC-V-02",
+      "entity_id": "ENT-V-01",
+      "match_method": "EXACT",
+      "verification_state": "UNVERIFIED",
+      "valid_from": "2025-11-02T06:05:00Z",
+      "source": "fixture",
+      "metadata_json": {
+        "note": "The same device on a second account. A real signal and a weak one: shared handsets and recycled numbers produce exactly this, and co-occurrence is not common control."
+      }
+    },
+    {
+      "account_id": "ACC-V-04",
+      "entity_id": "ENT-V-01",
+      "match_method": "NORMALIZED",
+      "confidence": 0.88,
+      "verification_state": "NEEDS_REVIEW",
+      "valid_from": "2025-11-05T00:00:00Z",
+      "source": "fixture",
+      "metadata_json": {
+        "note": "Inferred after normalisation, so it carries a confidence and a review state."
+      }
+    },
+    {
+      "account_id": "ACC-V-03",
+      "entity_id": "ENT-V-02",
+      "match_method": "EXACT",
+      "verification_state": "VERIFIED",
+      "valid_from": "2021-07-19T11:45:00Z",
+      "source": "fixture"
+    },
+    {
+      "account_id": "ACC-V-05",
+      "entity_id": "ENT-V-03",
+      "match_method": "EXACT",
+      "verification_state": "REJECTED",
+      "valid_from": "2019-05-30T08:00:00Z",
+      "valid_to": "2024-01-01T00:00:00Z",
+      "source": "fixture",
+      "metadata_json": {
+        "note": "Time-bounded rather than deleted. A link that was true last year is still a fact about last year, and a point-in-time query must see it as it stood."
+      }
+    },
+    {
+      "account_id": "ACC-V-04",
+      "entity_id": "ENT-V-02",
+      "match_method": "HEURISTIC",
+      "verification_state": "PENDING",
+      "confidence": 0.71,
+      "valid_from": "2025-11-19T14:05:00Z",
+      "source": "fixture",
+      "metadata_json": {
+        "note": "Written in a source system's own words rather than the platform's. HEURISTIC normalizes to NORMALIZED and PENDING to NEEDS_REVIEW, so this record exercises the alias path: a real feed will not use our vocabulary, and the ones that map onto it honestly are accepted rather than refused. Values with no honest destination -- a product type where a holder type belongs, an enforcement state -- are refused instead, and those cases live in the invalid fixture."
+      }
+    }
+  ],
+  "options": {
+    "source_system": "fixture",
+    "source_batch_id": "entity-links-valid-001"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "id": "dormant_to_active",
+  "label": "Dormant account reactivation",
+  "description": "An account quiet for months that suddenly handles a burst of transfers. The signal is the discontinuity, not the activity: a long-dormant account has no recent baseline to be consistent with, and a sold or compromised account is the commonest explanation for the break.",
+  "parameters": {
+    "dormant_days": 240,
+    "burst": 9,
+    "amount": 45000
+  },
+  "expected": {
+    "rule_codes": ["DORMANT_REACTIVATION", "FAN_IN_BURST"],
+    "min_risk_band": "HIGH",
+    "ground_truth_label": true,
+    "scenario_type": "dormant_reactivation"
+  },
+  "confounders": [
+    "A person returning from a long period abroad, or out of hospital, resuming their ordinary banking.",
+    "A seasonal business: a tax preparer in filing season, a tour operator in summer.",
+    "An inherited account being settled by an executor."
+  ],
+  "notes": "The scenario deliberately plants one old transaction before the dormancy. Without it the account is indistinguishable from a newly opened one, which is a different typology with different innocent explanations — and the rule must not be able to pass by firing on both. The account's `status` column is not used for this: status is what the source system reports, is often stale, and MuleGuard never sets it. Dormancy is computed from the transaction history."
+}

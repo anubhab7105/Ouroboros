@@ -1,0 +1,111 @@
+{
+  "score_version": "v1",
+  "score_type": "investigative_priority_score",
+  "scale": {
+    "min": 0,
+    "max": 100,
+    "precision": 2,
+    "semantics": "Relative investigative priority. NOT a probability of guilt, NOT a creditworthiness measure, and NOT an enforcement trigger."
+  },
+  "fusion": {
+    "method": "weighted_sum_of_normalised_components",
+    "description": "Each component is normalised to 0..1, multiplied by its weight, summed, then rescaled to 0..100. Weights of available components are renormalised so that a missing component lowers confidence rather than silently scoring the account as low risk.",
+    "components": {
+      "rules": {
+        "weight": 0.40,
+        "source": "app.rules.engine noisy-OR rule score",
+        "required": true,
+        "rationale": "Rules are the explainable backbone. An analyst can always read why a rule fired, so they carry the largest single weight."
+      },
+      "model": {
+        "weight": 0.25,
+        "source": "trained supervised model probability, when a validated model is active",
+        "required": false,
+        "rationale": "Weighted below rules because the model is trained on synthetic labels and must not dominate an explainable decision."
+      },
+      "anomaly": {
+        "weight": 0.15,
+        "source": "composite_anomaly_score_30d",
+        "required": false,
+        "rationale": "Unsupervised signal that catches typologies no rule encodes yet."
+      },
+      "graph": {
+        "weight": 0.12,
+        "source": "graph position features (intermediary, betweenness, cycle)",
+        "required": false,
+        "rationale": "Network position is strong evidence but partly already represented in the rule layer."
+      },
+      "complaint": {
+        "weight": 0.08,
+        "source": "complaint correlation strength",
+        "required": false,
+        "rationale": "Deliberately modest in fusion because the complaint rules already escalate directly; double counting would let one allegation dominate the score."
+      }
+    },
+    "missing_component_policy": {
+      "strategy": "renormalise_available_weights",
+      "min_components_for_score": 1,
+      "record_caveat": true,
+      "notes": [
+        "If the model is unavailable, the remaining weights are renormalised and scoring_mode becomes HEURISTIC_FALLBACK or RULES_ONLY.",
+        "A component that is merely zero is different from a component that is unavailable; only the latter is renormalised away.",
+        "Every assessment records which components were available in components_json."
+      ]
+    }
+  },
+  "bands": {
+    "description": "Band cut-points on the 0..100 scale. Chosen so that a single critical typology lands in HIGH, and CRITICAL requires genuinely corroborating evidence.",
+    "thresholds": [
+      {"band": "LOW", "min": 0, "max": 39.99, "action": "No queue placement. Visible in search and account views only."},
+      {"band": "MEDIUM", "min": 40, "max": 64.99, "action": "Appears in the triage queue at normal priority."},
+      {"band": "HIGH", "min": 65, "max": 84.99, "action": "Alert raised. Prioritised in the triage queue."},
+      {"band": "CRITICAL", "min": 85, "max": 100, "action": "Alert raised at top priority and surfaced in the dashboard escalation panel."}
+    ]
+  },
+  "alerting": {
+    "min_score_for_alert": 65,
+    "min_band_for_alert": "HIGH",
+    "always_alert_on_effects": ["escalate_to_human"],
+    "priority_mapping": {
+      "CRITICAL": "CRITICAL",
+      "HIGH": "HIGH",
+      "MEDIUM": "MEDIUM",
+      "LOW": "LOW"
+    },
+    "notes": [
+      "An escalate_to_human rule effect raises an alert regardless of the fused score, so a complaint-named suspect is never missed because other signals were quiet.",
+      "Alerts are investigative leads. Raising one must never trigger an automatic account action."
+    ]
+  },
+  "rule_severity_to_indicator_severity": {
+    "critical": "CRITICAL",
+    "high": "HIGH",
+    "medium": "MEDIUM",
+    "low": "LOW",
+    "info": "LOW"
+  },
+  "explanation": {
+    "max_indicators_per_assessment": 25,
+    "max_contributions_in_explanation": 15,
+    "include_component_breakdown": true,
+    "include_missing_data_caveats": true,
+    "require_evidence_refs": true,
+    "notes": [
+      "Every indicator must carry evidence references that resolve to real persisted records.",
+      "An indicator with no resolvable evidence is dropped rather than shown unsupported."
+    ]
+  },
+  "prohibited_uses": [
+    "Automatic account freezing, blocking, debit-blocking, or closure.",
+    "Adverse action against a customer without human investigation and a recorded disposition.",
+    "Any representation of the score as a probability of criminal guilt.",
+    "Use as a credit, employment, insurance, or eligibility signal.",
+    "Reporting a score to a third party without the accompanying limitations text."
+  ],
+  "caveats": [
+    "Scores are computed from synthetic data in this prototype and are not calibrated against real-world fraud base rates.",
+    "A high score means 'look at this sooner', not 'this is fraud'.",
+    "A low score is not a clearance: novel typologies may not be represented in the rule set or the training data.",
+    "Component weights are a product decision, not a learned optimum, and should be re-tuned against real labelled outcomes before any production use."
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "id": "fan_out",
+  "label": "Dispersal account (fan-out)",
+  "description": "One account paying many in a short window. The dispersal half: once funds have been collected, they are broken up and pushed outward, often to accounts that will each forward again. Detected on the count of distinct recipients within the window.",
+  "parameters": {
+    "destinations": 10,
+    "amount": 28000,
+    "within_hours": 4
+  },
+  "expected": {
+    "rule_codes": ["FAN_OUT_BURST"],
+    "min_risk_band": "HIGH",
+    "ground_truth_label": true,
+    "scenario_type": "fan_out_distributor"
+  },
+  "confounders": [
+    "Payroll. A small employer paying twenty salaries on the last working day of the month produces a textbook fan-out, every month, forever.",
+    "A supplier settling invoices in a batch.",
+    "A refund run after a failed service: one merchant, many customers, all within an hour."
+  ],
+  "notes": "Fan-out alone is the weakest of the typologies here, because its innocent explanations are so common and so regular. It is worth much more in combination: fan-in followed by fan-out through the same account within hours is the pass-through shape, and that is a far stronger signal than either half."
+}

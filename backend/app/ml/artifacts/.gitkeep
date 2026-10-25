@@ -1,0 +1,39 @@
+# MULEGUARD ML ARTIFACTS PLACEHOLDER
+#
+# This file exists only to preserve the directory layout in version control.
+# It is intentionally inert and must not be used to store model artefacts,
+# datasets, caches, logs, exports, binaries, pickles, notebooks, credentials,
+# configuration secrets, or runtime state.
+#
+# Repository policy:
+# - Do not commit model artefacts to this directory.
+# - Do not commit training datasets or evaluation fixtures to this directory.
+# - Do not commit raw customer data to this directory.
+# - Do not commit raw complaint narratives to this directory.
+# - Do not commit raw identifiers to this directory.
+# - Do not commit ground-truth labels, synthetic labels, fraud labels,
+#   scenario IDs, or fraud-ring IDs to this directory.
+# - Do not commit subject-label pairs to this directory.
+# - Do not commit secrets, tokens, passwords, API keys, private keys,
+#   authorization headers, cookies, session identifiers, database URLs,
+#   connection strings, filesystem paths, or environment files to this
+#   directory.
+# - Do not commit production artefacts or deployment bundles to this directory.
+#
+# Runtime behaviour:
+# - MULEGUARD ML artefacts are process-local, non-durable, and bounded for
+#   local prototype use only.
+# - This placeholder does not imply persistence, deployment, promotion,
+#   retirement, serving, or external model execution.
+# - This placeholder does not imply production readiness.
+# - This placeholder does not imply regulatory compliance.
+#
+# Product-safety notice:
+# MULEGUARD is a synthetic-first investigative prototype. Alerts, risk scores,
+# graph relationships, candidate money trails, entity links, complaint
+# correlations, anomaly scores, fallback scores, model predictions,
+# explanations, validation reports, and case dispositions are investigative
+# leads or human workflow artefacts only. They are not proof of wrongdoing and
+# must not trigger automatic adverse customer action.
+#
+# sentinel:muleguard.ml.artifacts.gitkeep:v1:inert-placeholder
