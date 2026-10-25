@@ -1060,12 +1060,12 @@ class ModelVersionResponse(BaseModel):
     Artifact file paths are intentionally not exposed.
     """
 
-    model_config = ConfigDict(from_attributes=False)
+    model_config = ConfigDict(from_attributes=False, populate_by_name=True)
 
     id: str
     version: str
     feature_schema_version: str
-    model_type: str
+    model_family: str = Field(alias="model_type")
     training_seed: Optional[int] = None
     training_started_at: Optional[datetime] = None
     training_finished_at: Optional[datetime] = None
@@ -1106,10 +1106,10 @@ class ModelEvaluationResponse(BaseModel):
     Safe model evaluation response.
     """
 
-    model_config = ConfigDict(from_attributes=False)
+    model_config = ConfigDict(from_attributes=False, populate_by_name=True)
 
     id: str
-    model_version_id: str
+    version_id: str = Field(alias="model_version_id")
     dataset_fingerprint: Optional[str] = None
     split_strategy: str
     sample_count: int = 0
