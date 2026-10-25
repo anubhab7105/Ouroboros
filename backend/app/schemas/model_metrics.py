@@ -91,7 +91,7 @@ class ModelVersionResponse(ResponseModel):
 
     id: str = Field(description="Model version identifier.")
     version: str = Field(description="Human-readable version.")
-    model_family: str = Field(alias="model_type", description="Model family or scoring baseline.")
+    family: str = Field(alias="model_type", description="Model family or scoring baseline.")
     feature_schema_version: str = Field(description="Feature schema it expects.")
     split_strategy: str = Field(default="UNKNOWN")
     is_active: bool = Field(description="Whether it is the promoted model.")
