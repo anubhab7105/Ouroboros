@@ -560,7 +560,7 @@ jobs:
   # ---------------------------------------------------------------------------
   dependency-review:
     name: Pull request dependency review
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' || inputs.pull_request_number != ''
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -579,7 +579,9 @@ jobs:
         with:
           fail-on-severity: moderate
           deny-licenses: GPL-3.0, AGPL-3.0
-          comment-summary-in-pr: always
+          base-ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.event.repository.default_branch }}
+          head-ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || inputs.checkout_ref }}
+          comment-summary-in-pr: ${{ github.event_name == 'pull_request' && 'always' || 'never' }}
 
   # ---------------------------------------------------------------------------
   # Publish the outcome against a PR/branch commit when CI was dispatched by
@@ -596,6 +598,7 @@ jobs:
       - docker
       - security-audit
       - codeql
+      - dependency-review
     runs-on: ubuntu-latest
     permissions:
       statuses: write
