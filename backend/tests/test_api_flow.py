@@ -117,6 +117,26 @@ PUBLIC_ENDPOINTS = [
 # -----------------------------------------------------------------------------
 
 
+def test_model_metrics_router_is_loaded_and_mounted(app):
+    """
+    Model metrics are an optional feature surface, but when enabled in CI the
+    module must load and its routes must be mounted instead of silently 404ing.
+    """
+    import importlib
+
+    module = importlib.import_module("app.api.v1.endpoints.model_metrics")
+    assert getattr(module, "router", None) is not None
+
+    paths = {getattr(route, "path", "") for route in app.routes}
+    if "/api/v1/model/versions" not in paths:
+        from app.api.v1.router import get_api_v1_inclusion_state
+
+        pytest.fail(
+            "Model metrics module imported but its routes were not mounted; "
+            f"API v1 inclusion state: {get_api_v1_inclusion_state()!r}"
+        )
+
+
 class TestPaginationContract:
     """One envelope, on every list endpoint."""
 
