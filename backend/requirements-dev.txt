@@ -75,7 +75,7 @@ build>=1.2,<2.0
 # 2. Testing core
 # -----------------------------------------------------------------------------
 # Pytest is the backend test runner.
-pytest>=8.2,<9.0
+pytest>=9.1.1,<10.0
 
 # Coverage measurement and Pytest integration.
 coverage[toml]>=7.17.0,<8.0
@@ -93,6 +93,9 @@ pytest-timeout>=2.3,<3.0
 
 # HTTP client used by FastAPI TestClient and API contract tests.
 httpx>=0.27,<1.0
+
+# Starlette's current TestClient uses httpx2; install it to avoid the deprecated httpx fallback.
+httpx2>=2.0,<3.0
 
 
 # =============================================================================

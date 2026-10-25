@@ -1257,14 +1257,16 @@ def amount_range_dependency(
     """
 
     def dependency(
-        amount_min: Annotated[
-            Optional[Decimal],
-            Query(alias=min_alias, description="Minimum amount"),
-        ] = None,
-        amount_max: Annotated[
-            Optional[Decimal],
-            Query(alias=max_alias, description="Maximum amount"),
-        ] = None,
+        amount_min: Optional[Decimal] = Query(
+            default=None,
+            alias=min_alias,
+            description="Minimum amount",
+        ),
+        amount_max: Optional[Decimal] = Query(
+            default=None,
+            alias=max_alias,
+            description="Maximum amount",
+        ),
     ) -> AmountRangeParams:
         try:
             minimum = Decimal(amount_min) if amount_min is not None else None
@@ -1324,10 +1326,11 @@ def search_dependency(
     """
 
     def dependency(
-        q: Annotated[
-            Optional[str],
-            Query(alias=alias, description="Free-text search query"),
-        ] = None,
+        q: Optional[str] = Query(
+            default=None,
+            alias=alias,
+            description="Free-text search query",
+        ),
         settings: SettingsDep = ...,
     ) -> SearchParams:
         effective_max = max_length
