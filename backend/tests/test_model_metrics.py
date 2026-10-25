@@ -44,6 +44,22 @@ pytestmark = [pytest.mark.ml, pytest.mark.api]
 MODEL = "/api/v1/model"
 
 
+def test_model_metrics_router_is_loaded_and_mounted(app):
+    from app.api.v1 import ENDPOINT_REGISTRY
+    from app.api.v1.endpoints import model_metrics
+
+    paths = {getattr(route, "path", "") for route in app.routes}
+    print(sorted(p for p in paths if "model" in p))
+
+    spec = ENDPOINT_REGISTRY["model"]
+    declared_paths = {route.path for route in model_metrics.router.routes}
+
+    assert spec.module == ".endpoints.model_metrics"
+    assert spec.prefix == "/model"
+    assert "/versions" in declared_paths
+    assert "/api/v1/model/versions" in paths
+
+
 # -----------------------------------------------------------------------------
 # Status
 # -----------------------------------------------------------------------------
