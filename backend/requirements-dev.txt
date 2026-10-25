@@ -211,7 +211,7 @@ yamllint>=1.35,<2.0
 # 10. Dependency and supply-chain hygiene
 # -----------------------------------------------------------------------------
 # pip-tools generates locked requirement files from pyproject.toml.
-pip-tools>=7.4,<8.0
+pip-tools>=7.6.2,<8.0
 
 # deptry detects unused, missing, misplaced, or transitive-only dependencies.
 deptry>=0.18,<0.21
