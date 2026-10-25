@@ -305,7 +305,13 @@ def test_a_failed_login_is_recorded_without_the_password(
 
     assert body["total"] >= 1
     assert "Hunter2-Is-Wrong!" not in response.text
-    assert "password" not in response.text.lower() or "password_change" in response.text
+
+    # The endpoint's caveats legitimately mention passwords in general.
+    # Check the actual failed-login event metadata for accidental credential
+    # storage instead of searching the entire response text.
+    failed_login = next(item for item in body["items"] if item["action"] == "failed_login")
+    metadata = failed_login.get("metadata_json") or {}
+    assert "password" not in {str(key).lower() for key in metadata}
 
 
 def test_the_client_address_is_stored_as_a_hash(client, auditor_client, make, db, users):
@@ -569,7 +575,7 @@ def test_metadata_can_be_excluded_from_an_export(admin_client, make, db, users):
     Being able to leave it out means an export for an outside recipient does
     not have to carry more than the recipient needs.
     """
-    make.audit_event(
+    event = make.audit_event(
         action="account.read",
         actor=users["analyst"],
         metadata_json={"filter": "status=DORMANT"},
@@ -585,7 +591,13 @@ def test_metadata_can_be_excluded_from_an_export(admin_client, make, db, users):
 
     assert with_metadata.status_code == 200
     assert without.status_code == 200
-    assert len(without.text) <= len(with_metadata.text)
+
+    # Each export is itself audited, so response sizes are not comparable.
+    # Compare the same event in both exports to isolate metadata redaction.
+    with_event = next(row for row in with_metadata.json()["events"] if row["id"] == event.id)
+    without_event = next(row for row in without.json()["events"] if row["id"] == event.id)
+    assert with_event["metadata_json"] == {"filter": "status=DORMANT"}
+    assert without_event["metadata_json"] is None
 
 
 def test_exporting_is_itself_audited(admin_client, make, db, users):
