@@ -1795,13 +1795,13 @@ class AnalysisRunResponse(BaseModel):
     Safe analysis-run response.
     """
 
-    model_config = ConfigDict(from_attributes=False)
+    model_config = ConfigDict(from_attributes=False, populate_by_name=True)
 
     id: str
     status: str
     scoring_mode: str
-    model_version_id: Optional[str] = None
-    model_version: Optional[str] = None
+    version_id: Optional[str] = Field(default=None, alias="model_version_id")
+    version_label: Optional[str] = Field(default=None, alias="model_version")
     requested_by: Optional[str] = None
     requested_by_username: Optional[str] = None
     started_at: Optional[datetime] = None
@@ -1841,7 +1841,7 @@ class AnalysisAssessmentResponse(BaseModel):
     Safe assessment row produced by an analysis run.
     """
 
-    model_config = ConfigDict(from_attributes=False)
+    model_config = ConfigDict(from_attributes=False, populate_by_name=True)
 
     id: str
     account_id: str
@@ -1851,7 +1851,7 @@ class AnalysisAssessmentResponse(BaseModel):
     score: Optional[Decimal] = None
     score_type: Optional[str] = None
     risk_band: str
-    model_version_id: Optional[str] = None
+    version_id: Optional[str] = Field(default=None, alias="model_version_id")
     feature_snapshot_id: Optional[str] = None
     analysis_run_id: Optional[str] = None
     explanation_available: bool = False
@@ -1862,7 +1862,7 @@ class AnalysisAlertResponse(BaseModel):
     Safe alert row produced by an analysis run.
     """
 
-    model_config = ConfigDict(from_attributes=False)
+    model_config = ConfigDict(from_attributes=False, populate_by_name=True)
 
     id: str
     account_id: str
@@ -1874,7 +1874,7 @@ class AnalysisAlertResponse(BaseModel):
     score: Optional[Decimal] = None
     score_version: Optional[str] = None
     scoring_mode: str
-    model_version: Optional[str] = None
+    version_label: Optional[str] = Field(default=None, alias="model_version")
     rule_codes: list[str] = Field(default_factory=list)
     first_seen_at: datetime
     last_seen_at: datetime
@@ -1942,13 +1942,13 @@ class AnalysisStatusResponse(BaseModel):
     Safe analysis subsystem status.
     """
 
-    model_config = ConfigDict(from_attributes=False)
+    model_config = ConfigDict(from_attributes=False, populate_by_name=True)
 
     enabled: bool
     service_available: bool
     scoring_mode: str
-    model_version_id: Optional[str] = None
-    model_version: Optional[str] = None
+    version_id: Optional[str] = Field(default=None, alias="model_version_id")
+    version_label: Optional[str] = Field(default=None, alias="model_version")
     require_trained_model: bool
     dataset_mode: str
     allow_all_accounts: bool
