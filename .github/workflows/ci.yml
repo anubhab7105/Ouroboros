@@ -103,6 +103,7 @@ jobs:
       BACKEND_DOCS_ENABLED: "true"
       BACKEND_CORS_ORIGINS: "http://localhost:5173,http://localhost:4173,http://localhost:8080"
       AUTH_ENABLED: "true"
+      ML_ENABLED: "true"
       SEED_DEV_USERS: "false"
       SEED_DEMO_DATA: "false"
       ALEMBIC_UPGRADE_ON_START: "true"
