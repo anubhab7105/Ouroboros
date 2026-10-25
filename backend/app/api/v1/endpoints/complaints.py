@@ -1704,7 +1704,7 @@ def _complaint_response(
         victim_account_id=_str_or_none(_get_if_exists(complaint, "victim_account_id", None)),
         suspected_account_id=_str_or_none(_get_if_exists(complaint, "suspected_account_id", None)),
         transaction_reference=_str_or_none(_get_if_exists(complaint, "transaction_reference", None)),
-        narrative_available=bool(_get_if_exists(complaint, "narrative_raw", None)),
+        narrative_available=bool(_str_or_none(_get_if_exists(complaint, "narrative_raw", None))),
         created_at=_timestamp_value(complaint, "record_created_at", "created_at"),
         updated_at=_timestamp_value(complaint, "record_updated_at", "updated_at"),
         correlation_count=correlation_count,
