@@ -31,7 +31,6 @@ jobs:
           script: |
             const { owner, repo } = context.repo;
             const defaultBranch = context.payload.repository.default_branch;
-            const markerContext = "MULEGUARD CI (reconciled)";
             const maxDispatchesPerPass = 4;
             const stalePendingMs = 90 * 60 * 1000;
             const repoFullName = `${owner}/${repo}`;
@@ -39,33 +38,17 @@ jobs:
             const openPrs = await github.paginate(github.rest.pulls.list, {
               owner, repo, state: "open", per_page: 100
             });
+            const targets = openPrs
+              .filter(pr => pr.head.repo && pr.head.repo.full_name === repoFullName)
+              .map(pr => ({
+                number: pr.number,
+                sha: pr.head.sha,
+                branch: pr.head.ref,
+                baseBranch: pr.base.ref,
+                updatedAt: pr.updated_at
+              }))
+              .sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt));
 
-            // The reconciliation fallback is for branches owned by this repo
-            // (including Dependabot branches). Fork PRs remain covered by the
-            // normal pull_request trigger and are not dispatched from this token.
-            const targetsBySha = new Map();
-            for (const pr of openPrs) {
-              if (!pr.head.repo || pr.head.repo.full_name !== repoFullName) continue;
-              const existing = targetsBySha.get(pr.head.sha);
-              if (existing) {
-                existing.pullRequestNumbers.push(pr.number);
-                if (Date.parse(pr.updated_at) > Date.parse(existing.updatedAt)) {
-                  existing.updatedAt = pr.updated_at;
-                  existing.branch = pr.head.ref;
-                }
-              } else {
-                targetsBySha.set(pr.head.sha, {
-                  sha: pr.head.sha,
-                  branch: pr.head.ref,
-                  pullRequestNumbers: [pr.number],
-                  updatedAt: pr.updated_at
-                });
-              }
-            }
-
-            const targets = [...targetsBySha.values()].sort(
-              (a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt)
-            );
             let dispatchCount = 0;
             let alreadyCovered = 0;
 
@@ -75,6 +58,7 @@ jobs:
                 break;
               }
 
+              const markerContext = `MULEGUARD CI (reconciled PR #${target.number})`;
               const statuses = await github.rest.repos.listCommitStatusesForRef({
                 owner, repo, ref: target.sha, per_page: 100
               });
@@ -94,18 +78,17 @@ jobs:
               const runs = await github.rest.actions.listWorkflowRunsForRepo({
                 owner, repo, branch: target.branch, per_page: 100
               });
-              const hasCurrentCi = (runs.data.workflow_runs || []).some(run =>
-                run.name === "MULEGUARD CI" && (
-                  run.head_sha === target.sha ||
-                  (run.pull_requests || []).some(runPr => runPr.head && runPr.head.sha === target.sha)
+              const hasCurrentPrCi = (runs.data.workflow_runs || []).some(run =>
+                run.name === "MULEGUARD CI" && run.event === "pull_request" &&
+                (run.pull_requests || []).some(runPr =>
+                  runPr.number === target.number && runPr.head && runPr.head.sha === target.sha
                 )
               );
-              if (hasCurrentCi) {
+              if (hasCurrentPrCi) {
                 alreadyCovered++;
                 continue;
               }
 
-              const prNumber = target.pullRequestNumbers[0];
               await github.rest.actions.createWorkflowDispatch({
                 owner,
                 repo,
@@ -113,7 +96,8 @@ jobs:
                 ref: defaultBranch,
                 inputs: {
                   checkout_ref: target.sha,
-                  pull_request_number: String(prNumber)
+                  pull_request_number: String(target.number),
+                  base_ref: target.baseBranch
                 }
               });
               await github.rest.repos.createCommitStatus({
@@ -122,9 +106,9 @@ jobs:
                 sha: target.sha,
                 state: "pending",
                 context: markerContext,
-                description: `Full CI dispatch queued for PR #${prNumber}.`
+                description: `Full CI dispatch queued for PR #${target.number}.`
               });
-              core.info(`Dispatched MULEGUARD CI for PR #${prNumber} at ${target.sha}.`);
+              core.info(`Dispatched MULEGUARD CI for PR #${target.number} at ${target.sha}.`);
               dispatchCount++;
             }
 
