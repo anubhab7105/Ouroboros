@@ -86,7 +86,7 @@ pytest-mock>=3.14,<4.0
 
 # Safe environment-variable injection for tests.
 # Prefer explicit test fixtures over relying on developer .env files.
-pytest-env>=1.1,<2.0
+pytest-env>=1.8.1,<2.0
 
 # Prevent hanging graph/ML/report tests in local development and CI.
 pytest-timeout>=2.3,<3.0
