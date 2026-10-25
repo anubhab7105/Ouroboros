@@ -2465,7 +2465,10 @@ def create_analysis_run(
         settings=settings,
     )
 
-    payload_digest = _payload_hash(parameters)
+    # Hash only the canonical caller payload. Generated metadata such as request_id
+    # and the default as_of timestamp changes on every retry and must not break
+    # idempotent replay of the same request.
+    payload_digest = _payload_hash(payload.model_dump(mode="json", exclude_none=True))
     cache_key: Optional[str] = None
 
     if idempotency_key:
@@ -2478,10 +2481,7 @@ def create_analysis_run(
             if cached_payload_hash != payload_digest:
                 raise IdempotencyConflictError(
                     "Idempotency-Key was already used with a different analysis payload.",
-                    details={
-                        "idempotency_key": idempotency_key[:128],
-                        "run_id": cached_run_id,
-                    },
+                    details={"run_id": cached_run_id},
                 )
 
             existing_run = db.get(AnalysisRun, cached_run_id)
