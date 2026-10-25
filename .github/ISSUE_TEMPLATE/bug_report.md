@@ -28,7 +28,7 @@ MULEGUARD is a synthetic-first prototype. If you are testing with synthetic
 data, include the synthetic scenario ID or generated record ID instead.
 
 If this is a security vulnerability, do not open a public issue.
-Report it privately to the project security contact.
+Use GitHub's private vulnerability reporting feature when available; see [SECURITY.md](../../SECURITY.md). Do not include exploit details in this public issue.
 =============================================================================
 -->
 

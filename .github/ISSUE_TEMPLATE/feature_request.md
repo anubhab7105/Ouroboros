@@ -28,7 +28,7 @@ Please do not include:
 - real complaint narratives.
 
 If this request involves a security vulnerability, do not open a public issue.
-Report it privately to the project security contact.
+Use GitHub's private vulnerability reporting feature when available; see [SECURITY.md](../../SECURITY.md). Do not include exploit details in this public issue.
 
 Before submitting, read:
 - README.md

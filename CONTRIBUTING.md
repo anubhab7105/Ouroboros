@@ -23,11 +23,7 @@ By contributing, you agree that your contribution will be licensed under the pro
 
 Do **not** open a public issue for a security vulnerability.
 
-Report vulnerabilities privately to:
-
-```text
-security@muleguard.local
-```
+Use GitHub's **Report a vulnerability** feature on the repository's **Security** tab when private vulnerability reporting is enabled. If the option is unavailable, contact the repository maintainer through their GitHub profile and ask for a private channel. See [SECURITY.md](SECURITY.md) for details.
 
 Include:
 
