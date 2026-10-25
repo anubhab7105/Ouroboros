@@ -66,7 +66,7 @@
 # Used for editable installs, source distributions, wheel builds, and local
 # package validation. These are not application runtime dependencies.
 
-setuptools>=69,<72
+setuptools>=69,<85
 wheel>=0.43,<0.45
 build>=1.2,<2.0
 
