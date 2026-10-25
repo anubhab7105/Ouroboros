@@ -93,7 +93,7 @@ dependencies = [
 
   # Data processing / numerical features
   "pandas>=2.2,<3.0",
-  "numpy>=1.26,<2.0",
+  "numpy>=1.26,<3.0",
   "scipy>=1.11,<2.0",
 
   # Machine learning baselines
