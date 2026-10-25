@@ -75,7 +75,7 @@ build>=1.2,<2.0
 # 2. Testing core
 # -----------------------------------------------------------------------------
 # Pytest is the backend test runner.
-pytest>=8.2,<9.0
+pytest>=8.2,<10.0
 
 # Coverage measurement and Pytest integration.
 coverage[toml]>=7.6,<8.0
