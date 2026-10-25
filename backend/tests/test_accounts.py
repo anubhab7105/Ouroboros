@@ -607,7 +607,7 @@ def test_account_transactions_carry_a_direction(analyst_client, make, db):
     body = assert_ok(analyst_client.get(f"{ACCOUNTS}/{account.id}/transactions"))
     directions = {row["direction"] for row in body["items"]}
 
-    assert directions == {"inbound", "outbound"}
+    assert directions == {"incoming", "outgoing"}
 
     for row in body["items"]:
         assert row["counterparty_account_id"] == other.id
@@ -623,12 +623,12 @@ def test_account_transactions_can_be_filtered_by_direction(analyst_client, make,
 
     inbound = assert_ok(
         analyst_client.get(
-            f"{ACCOUNTS}/{account.id}/transactions", params={"direction": "inbound"}
+            f"{ACCOUNTS}/{account.id}/transactions", params={"direction": "incoming"}
         )
     )
 
     assert len(inbound["items"]) == 1
-    assert inbound["items"][0]["direction"] == "inbound"
+    assert inbound["items"][0]["direction"] == "incoming"
 
 
 def test_account_alerts_are_scoped_to_the_account(analyst_client, make, db):
