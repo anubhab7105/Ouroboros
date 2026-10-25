@@ -1,3 +1,4 @@
+import type * as cytoscape from 'cytoscape';
 import { ENTITY_TYPE_TOKENS, RISK_BAND_TOKENS, SEVERITY_TOKENS } from '@/lib/constants';
 import type { RiskBand } from '@/types/common';
 import type { GraphEdge, GraphNode } from '@/types/graph';
@@ -281,7 +282,7 @@ export function cytoscapeStylesheet(mode: ThemeMode) {
         opacity: 0.15,
       },
     },
-  ];
+  ] as cytoscape.Stylesheet[];
 }
 
 /** Layout options. Shapes in fund-flow graphs read best left to right. */

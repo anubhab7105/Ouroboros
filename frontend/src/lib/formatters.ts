@@ -50,7 +50,7 @@ export function formatEvidenceReference(reference: string | null | undefined): s
   if (!type || !id) return String(reference);
 
   const label = EVIDENCE_TYPE_LABELS[type as EvidenceType] ?? humaniseEnum(type);
-  return `${label} ${truncateId(id, 8)}`;
+  return `${label} ${truncateText(id, 9)}`;
 }
 
 export function pluralise(count: number, singular: string, plural?: string): string {

@@ -1,8 +1,6 @@
 import type { AlertState } from '@/types/alert';
 import type { CaseStatus, Disposition } from '@/types/case';
 import type { Priority, RiskBand, ScoringMode, Severity } from '@/types/common';
-import type { MatchMethod } from '@/types/complaint';
-
 /**
  * Display tokens for every enum the API returns.
  *
@@ -194,7 +192,7 @@ export const SCORING_MODE_TOKENS: Record<ScoringMode, DisplayToken> = {
   },
 };
 
-export const MATCH_METHOD_LABELS: Record<MatchMethod, string> = {
+export const MATCH_METHOD_LABELS: Record<string, string> = {
   EXACT: 'Exact reference',
   NORMALIZED: 'Normalised reference',
   ENTITY_TEMPORAL: 'Shared entity in window',

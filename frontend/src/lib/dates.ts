@@ -23,9 +23,14 @@ function toDate(value: string | Date | null | undefined): Date | null {
   return isValid(parsed) ? parsed : null;
 }
 
+/** Shift an instant so `date-fns`' local formatter renders UTC wall-clock time. */
+function toUtcDate(date: Date): Date {
+  return new Date(date.getTime() + date.getTimezoneOffset() * 60000);
+}
+
 export function formatDate(value: string | Date | null | undefined): string {
   const date = toDate(value);
-  return date ? format(date, DATE_FORMAT) : '—';
+  return date ? format(toUtcDate(date), DATE_FORMAT) : '—';
 }
 
 /** Absolute timestamp with an explicit UTC marker. */
@@ -37,7 +42,7 @@ export function formatDateTime(
   if (!date) return '—';
 
   const pattern = options.seconds ? DATE_TIME_SECONDS_FORMAT : DATE_TIME_FORMAT;
-  return `${format(date, pattern)} UTC`;
+  return `${format(toUtcDate(date), pattern)} UTC`;
 }
 
 /** Relative age, e.g. "3 days ago". Always pair with the absolute value. */
@@ -69,15 +74,15 @@ export function formatBucketLabel(
 
   switch (granularity) {
     case 'hour':
-      return format(date, 'MMM d HH:mm');
+      return format(toUtcDate(date), 'MMM d HH:mm');
     case 'day':
-      return format(date, 'MMM d');
+      return format(toUtcDate(date), 'MMM d');
     case 'week':
-      return `w/c ${format(date, 'MMM d')}`;
+      return `w/c ${format(toUtcDate(date), 'MMM d')}`;
     case 'month':
-      return format(date, 'MMM yyyy');
+      return format(toUtcDate(date), 'MMM yyyy');
     default:
-      return format(date, DATE_FORMAT);
+      return format(toUtcDate(date), DATE_FORMAT);
   }
 }
 
@@ -98,7 +103,7 @@ export function formatDuration(seconds: number | null | undefined): string {
 /** `YYYY-MM-DD` for a date input, or empty string. */
 export function toDateInputValue(value: string | Date | null | undefined): string {
   const date = toDate(value);
-  return date ? format(date, DATE_FORMAT) : '';
+  return date ? format(toUtcDate(date), DATE_FORMAT) : '';
 }
 
 /** A date input's value as an ISO instant, or undefined. */
