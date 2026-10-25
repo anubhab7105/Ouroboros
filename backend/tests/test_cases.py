@@ -341,12 +341,12 @@ def test_patch_with_an_empty_body_is_rejected(analyst_client, make, db, users):
 # -----------------------------------------------------------------------------
 
 
-def test_triage_moves_new_to_triaged(analyst_client, make, db, users):
+def test_triage_moves_new_to_triaged(senior_client, make, db, users):
     case = make.case(status=CaseStatus.NEW, creator=users["analyst"])
     db.commit()
 
     body = assert_ok(
-        analyst_client.post(
+        senior_client.post(
             f"{CASES}/{case.id}/assign",
             json={"assignee_id": users["analyst"].id},
         )
@@ -552,7 +552,7 @@ def test_assign_reports_both_assignees(senior_client, make, db, users):
 
 
 def test_assigning_to_the_same_person_reports_no_change(senior_client, make, db, users):
-    case = make.case(assignee=users["analyst"], creator=users["senior"])
+    case = make.case(status=CaseStatus.TRIAGED, assignee=users["analyst"], creator=users["senior"])
     db.commit()
 
     body = assert_ok(
