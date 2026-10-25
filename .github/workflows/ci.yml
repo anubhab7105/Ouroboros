@@ -29,12 +29,29 @@ on:
     branches:
       - "**"
   pull_request:
-    branches:
-      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+      - edited
   workflow_dispatch:
+    inputs:
+      checkout_ref:
+        description: "Optional commit SHA to test when reconciling a PR or branch"
+        required: false
+        type: string
+      pull_request_number:
+        description: "PR number associated with a reconciled CI run"
+        required: false
+        type: string
+      base_ref:
+        description: "PR base branch for dependency review during reconciliation"
+        required: false
+        type: string
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || inputs.pull_request_number || inputs.checkout_ref || github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -98,6 +115,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.checkout_ref || github.sha }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -177,6 +196,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.checkout_ref || github.sha }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -229,6 +250,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.checkout_ref || github.sha }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -319,6 +342,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.checkout_ref || github.sha }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -373,6 +398,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.checkout_ref || github.sha }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -517,6 +544,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.checkout_ref || github.sha }}
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
@@ -535,7 +564,7 @@ jobs:
   # ---------------------------------------------------------------------------
   dependency-review:
     name: Pull request dependency review
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' || inputs.pull_request_number != ''
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -546,10 +575,58 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.checkout_ref || github.sha }}
 
       - name: Review dependency changes
         uses: actions/dependency-review-action@v4
         with:
           fail-on-severity: moderate
           deny-licenses: GPL-3.0, AGPL-3.0
-          comment-summary-in-pr: always
+          base-ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || inputs.base_ref || github.event.repository.default_branch }}
+          head-ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || inputs.checkout_ref }}
+          comment-summary-in-pr: ${{ github.event_name == 'pull_request' && 'always' || 'never' }}
+
+  # ---------------------------------------------------------------------------
+  # Publish the outcome against a PR/branch commit when CI was dispatched by
+  # ci-reconcile.yml. The workflow itself runs from the trusted default branch;
+  # only the checkout ref points at the commit being tested.
+  # ---------------------------------------------------------------------------
+  reconciled-status:
+    name: Publish reconciled CI status
+    if: ${{ always() && inputs.checkout_ref != '' }}
+    needs:
+      - backend
+      - frontend
+      - data-contracts
+      - docker
+      - security-audit
+      - codeql
+      - dependency-review
+    runs-on: ubuntu-latest
+    permissions:
+      statuses: write
+    steps:
+      - name: Publish outcome on the tested commit
+        uses: actions/github-script@v7
+        env:
+          TARGET_SHA: ${{ inputs.checkout_ref }}
+          PR_NUMBER: ${{ inputs.pull_request_number }}
+          CI_FAILED: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
+        with:
+          script: |
+            const targetSha = process.env.TARGET_SHA;
+            const failed = process.env.CI_FAILED === "true";
+            const state = failed ? "failure" : "success";
+            const prNumber = process.env.PR_NUMBER;
+            const label = prNumber ? `PR #${prNumber}` : "the target commit";
+            const description = `Full CI ${state === "success" ? "passed" : "failed"} for ${label}.`;
+            const contextName = prNumber ? `MULEGUARD CI (reconciled PR #${prNumber})` : "MULEGUARD CI (reconciled)";
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: targetSha,
+              state,
+              context: contextName,
+              description
+            });

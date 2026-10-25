@@ -1,0 +1,115 @@
+name: CI Reconciler
+
+# Regular push/PR events run CI immediately. This scheduled fallback catches
+# commits (for example, some bot-driven rebases) for which GitHub does not
+# create a normal workflow run. It dispatches the trusted ci.yml from the
+# default branch while asking that workflow to check out the exact PR head SHA.
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+  pull-requests: read
+  statuses: write
+
+concurrency:
+  group: ci-reconciler
+  cancel-in-progress: false
+
+jobs:
+  reconcile-open-prs:
+    name: Find PR commits missing full CI
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Dispatch CI for uncovered PR commits
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const defaultBranch = context.payload.repository.default_branch;
+            const maxDispatchesPerPass = 4;
+            const stalePendingMs = 90 * 60 * 1000;
+            const repoFullName = `${owner}/${repo}`;
+
+            const openPrs = await github.paginate(github.rest.pulls.list, {
+              owner, repo, state: "open", per_page: 100
+            });
+            const targets = openPrs
+              .filter(pr => pr.head.repo && pr.head.repo.full_name === repoFullName)
+              .map(pr => ({
+                number: pr.number,
+                sha: pr.head.sha,
+                branch: pr.head.ref,
+                baseBranch: pr.base.ref,
+                updatedAt: pr.updated_at
+              }))
+              .sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt));
+
+            let dispatchCount = 0;
+            let alreadyCovered = 0;
+
+            for (const target of targets) {
+              if (dispatchCount >= maxDispatchesPerPass) {
+                core.info(`Dispatch cap reached (${maxDispatchesPerPass}); remaining PRs will be checked on the next scheduled pass.`);
+                break;
+              }
+
+              const markerContext = `MULEGUARD CI (reconciled PR #${target.number})`;
+              const statuses = await github.rest.repos.listCommitStatusesForRef({
+                owner, repo, ref: target.sha, per_page: 100
+              });
+              const marker = statuses.data
+                .filter(status => status.context === markerContext)
+                .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at))[0];
+
+              if (marker && marker.state !== "pending") {
+                alreadyCovered++;
+                continue;
+              }
+              if (marker && Date.now() - Date.parse(marker.created_at) < stalePendingMs) {
+                alreadyCovered++;
+                continue;
+              }
+
+              const runs = await github.rest.actions.listWorkflowRunsForRepo({
+                owner, repo, branch: target.branch, per_page: 100
+              });
+              const hasCurrentPrCi = (runs.data.workflow_runs || []).some(run =>
+                run.name === "MULEGUARD CI" && run.event === "pull_request" &&
+                (run.pull_requests || []).some(runPr =>
+                  runPr.number === target.number && runPr.head && runPr.head.sha === target.sha
+                )
+              );
+              if (hasCurrentPrCi) {
+                alreadyCovered++;
+                continue;
+              }
+
+              await github.rest.actions.createWorkflowDispatch({
+                owner,
+                repo,
+                workflow_id: "ci.yml",
+                ref: defaultBranch,
+                inputs: {
+                  checkout_ref: target.sha,
+                  pull_request_number: String(target.number),
+                  base_ref: target.baseBranch
+                }
+              });
+              await github.rest.repos.createCommitStatus({
+                owner,
+                repo,
+                sha: target.sha,
+                state: "pending",
+                context: markerContext,
+                description: `Full CI dispatch queued for PR #${target.number}.`
+              });
+              core.info(`Dispatched MULEGUARD CI for PR #${target.number} at ${target.sha}.`);
+              dispatchCount++;
+            }
+
+            core.info(`CI reconciliation complete: dispatched ${dispatchCount}, already covered ${alreadyCovered}, open same-repository PR commits checked ${targets.length}.`);
