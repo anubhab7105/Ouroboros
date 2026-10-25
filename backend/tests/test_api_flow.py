@@ -336,7 +336,7 @@ class TestRequestCorrelation:
         """
         supplied = "req-flow-0002"
 
-        response = analyst_client.raw.get(
+        response = analyst_client.get(
             f"{API}/accounts/ACC-missing",
             headers={"X-Request-ID": supplied},
         )
