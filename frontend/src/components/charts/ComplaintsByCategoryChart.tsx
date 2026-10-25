@@ -6,7 +6,8 @@ import type { FriendlyError } from '@/lib/errorMapper';
 import { humaniseEnum, truncateText } from '@/lib/formatters';
 import type { CategoryCount } from '@/types/dashboard';
 
-import { AXIS_PROPS, ChartFrame, GRID_PROPS, TOOLTIP_PROPS } from './ChartFrame';
+import { ChartFrame } from './ChartFrame';
+import { AXIS_PROPS, GRID_PROPS, TOOLTIP_PROPS } from './chartProps';
 
 export interface ComplaintsByCategoryChartProps {
   data: CategoryCount[];

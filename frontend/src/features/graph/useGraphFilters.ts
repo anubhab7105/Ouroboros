@@ -45,11 +45,11 @@ export function useGraphFilters(status?: GraphStatus) {
     [],
   );
 
-  const readBool = (key: string, fallback: boolean): boolean => {
+  const readBool = useCallback((key: string, fallback: boolean): boolean => {
     const raw = params[key];
     if (raw === undefined) return fallback;
     return raw === 'true' || raw === '1';
-  };
+  }, [params]);
 
   const filters = useMemo<GraphFilterState>(() => {
     const depth = clamp(Number(params.depth ?? DEFAULTS.depth), status?.max_depth, DEFAULTS.depth);
@@ -74,7 +74,7 @@ export function useGraphFilters(status?: GraphStatus) {
         ? clamp(Number(params.max_edges), status?.hard_max_edges, status?.max_edges ?? 800)
         : undefined,
     };
-  }, [params, rootAccountId, status, clamp]);
+  }, [params, rootAccountId, status, clamp, readBool]);
 
   /** True when the user asked for more than this deployment allows. */
   const clampedFields = useMemo(() => {

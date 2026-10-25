@@ -6,7 +6,8 @@ import type { FriendlyError } from '@/lib/errorMapper';
 import { humaniseEnum } from '@/lib/formatters';
 import type { RiskBand } from '@/types/common';
 
-import { AXIS_PROPS, ChartFrame, GRID_PROPS, TOOLTIP_PROPS } from './ChartFrame';
+import { ChartFrame } from './ChartFrame';
+import { AXIS_PROPS, GRID_PROPS, TOOLTIP_PROPS } from './chartProps';
 
 export interface RiskDistributionChartProps {
   /**

@@ -57,7 +57,7 @@ export function AccountTimelinePanel({
   });
 
   const error = useApiError(query.error);
-  const rows = query.data?.items ?? [];
+  const rows = useMemo(() => query.data?.items ?? [], [query.data?.items]);
 
   /**
    * Daily buckets from the rows on screen.
