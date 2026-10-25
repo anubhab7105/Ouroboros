@@ -62,7 +62,7 @@ from decimal import Decimal
 from enum import Enum
 from typing import Annotated, Any, Final, Optional
 
-from fastapi import APIRouter, Depends, Path, Query
+from fastapi import APIRouter, Depends, Path, Query, Request
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import and_, desc, func, or_, select
 from sqlalchemy.orm import Session
@@ -1364,7 +1364,7 @@ def _active_model_version_row(db: Session) -> Optional[Any]:
     ),
 )
 def model_metrics_status(
-    request: Any,
+    request: Request,
     settings: SettingsDep,
     _: User = Depends(require_permission(MODEL_READ_PERMISSION)),
 ) -> ModelMetricsStatusResponse:
@@ -1417,7 +1417,7 @@ def model_metrics_status(
     ),
 )
 def current_model(
-    request: Any,
+    request: Request,
     db: SessionDep,
     settings: SettingsDep,
     _: User = Depends(require_permission(MODEL_READ_PERMISSION)),
@@ -1495,7 +1495,7 @@ def current_model(
     ),
 )
 def model_limitations(
-    request: Any,
+    request: Request,
     settings: SettingsDep,
     _: User = Depends(require_permission(MODEL_READ_PERMISSION)),
 ) -> ModelLimitationsResponse:
