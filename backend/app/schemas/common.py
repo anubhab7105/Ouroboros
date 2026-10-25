@@ -107,6 +107,7 @@ class ResponseModel(MuleGuardModel):
         extra="ignore",
         str_strip_whitespace=True,
         from_attributes=True,
+        populate_by_name=True,
     )
 
 
