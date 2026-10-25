@@ -1175,7 +1175,7 @@ class FeatureSchemaResponse(BaseModel):
     Safe feature-schema metadata response.
     """
 
-    model_config = ConfigDict(from_attributes=False)
+    model_config = ConfigDict(from_attributes=False, populate_by_name=True)
 
     available: bool
     feature_schema_version: str
@@ -1183,7 +1183,7 @@ class FeatureSchemaResponse(BaseModel):
     feature_windows: list[str] = Field(default_factory=list)
     forbidden_fields: list[str] = Field(default_factory=list)
     fallback_label: str
-    schema: Optional[Any] = None
+    feature_schema: Optional[Any] = Field(default=None, alias="schema")
     caveats: list[str] = Field(default_factory=list)
 
 
@@ -1561,7 +1561,7 @@ def feature_schema(
             metadata.get("fallback_label")
             or _setting(settings, "ML_FALLBACK_MODE_LABEL", "heuristic_fallback")
         ),
-        schema=metadata.get("schema"),
+        feature_schema=metadata.get("schema"),
         caveats=list(_MODEL_METRICS_CAVEATS),
     )
 
