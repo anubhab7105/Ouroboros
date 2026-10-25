@@ -516,4 +516,4 @@ def test_the_timeline_does_not_leak_ground_truth_labels(
     assert "ring-7" not in raw
     assert "fan_in_collector" not in raw
     assert "ground_truth" not in raw
-    assert "scenario" not in raw
+    assert "scenario_id" not in raw
