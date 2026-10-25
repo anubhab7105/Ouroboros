@@ -71,7 +71,7 @@ RUN npm run build
 # -----------------------------------------------------------------------------
 # Stage 2: serve
 # -----------------------------------------------------------------------------
-FROM nginx:1.27-alpine AS runtime
+FROM nginx:1.31-alpine AS runtime
 
 LABEL org.opencontainers.image.title="MuleGuard frontend" \
       org.opencontainers.image.description="Investigation interface for mule account detection. Synthetic data only." \
