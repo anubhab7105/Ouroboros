@@ -29,6 +29,7 @@ from __future__ import annotations
 import pytest
 
 from app.models import ModelType, SplitStrategy
+from app.api.v1.endpoints.model_metrics import FeatureSchemaResponse
 
 from tests.utils import assert_error, assert_ok, assert_paginated, ids_of
 
@@ -178,6 +179,20 @@ def test_the_limitations_summary_says_what_the_labels_are(analyst_client):
 # -----------------------------------------------------------------------------
 
 
+def test_feature_schema_python_attribute_preserves_json_alias():
+    response = FeatureSchemaResponse(
+        available=True,
+        feature_schema_version="v1",
+        fallback_label="heuristic_fallback",
+        feature_schema={"fields": ["amount"]},
+    )
+
+    assert response.feature_schema == {"fields": ["amount"]}
+    payload = response.model_dump(by_alias=True)
+    assert payload["schema"] == {"fields": ["amount"]}
+    assert "feature_schema" not in payload
+
+
 def test_the_feature_schema_is_published(analyst_client):
     """
     The field list, the windows, and the forbidden names.
@@ -190,6 +205,8 @@ def test_the_feature_schema_is_published(analyst_client):
 
     assert body["available"] is True
     assert body["feature_schema_version"]
+    assert "schema" in body
+    assert "feature_schema" not in body
     assert body["feature_fields"]
     assert body["feature_windows"]
     assert body["forbidden_fields"]
