@@ -83,10 +83,21 @@ get_settings.cache_clear()
 
 from sqlalchemy.orm import Session  # noqa: E402
 
-from app import db as app_db  # noqa: E402
+from sqlalchemy.orm import Session as _SQLAlchemySession
+
+_original_session_commit = _SQLAlchemySession.commit
+
+def _session_commit_without_outer_transaction(self: Any) -> None:
+    # In tests the session is bound to an outer transaction that must remain
+    # open so it can be rolled back. Committing would persist data across
+    # tests, so flush instead.
+    self.flush()
+
+_SQLAlchemySession.commit = _session_commit_without_outer_transaction  # type: ignore[assignment]
 from app.core.security import hash_password  # noqa: E402
 from app.main import create_app  # noqa: E402
 from app.models import User, UserRole  # noqa: E402
+from app import db as app_db  # noqa: E402
 
 from tests import factories  # noqa: E402
 from tests.utils import assert_ok  # noqa: E402
@@ -111,7 +122,9 @@ def engine() -> Iterator[Any]:
     database.
     """
     app_db.init_db()
-    yield app_db.get_engine()
+    engine = app_db.get_engine()
+    engine.dispose = lambda: None
+    yield engine
 
 
 @pytest.fixture()
@@ -131,8 +144,8 @@ def db(engine: Any) -> Iterator[Session]:
     try:
         yield session
     finally:
-        session.close()
         transaction.rollback()
+        session.close()
         connection.close()
 
 
@@ -212,6 +225,13 @@ def app(db: Session) -> Iterator[Any]:
 def client(app: Any) -> Iterator[Any]:
     """An unauthenticated client."""
     from fastapi.testclient import TestClient
+
+    import app.main as app_main
+
+    async def _noop_shutdown(logger: Any) -> None:
+        return None
+
+    app_main._shutdown_database = _noop_shutdown
 
     with TestClient(app, raise_server_exceptions=False) as test_client:
         yield test_client
@@ -336,6 +356,13 @@ def client_factory(db: Session) -> Iterator[Any]:
         from app.api.deps import get_api_settings
 
         application.dependency_overrides[get_api_settings] = lambda: settings
+
+        import app.main as app_main
+
+        async def _noop_shutdown(logger: Any) -> None:
+            return None
+
+        app_main._shutdown_database = _noop_shutdown
 
         test_client = TestClient(application, raise_server_exceptions=False)
         test_client.__enter__()

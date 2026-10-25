@@ -746,7 +746,6 @@ class Complaint(Base, RecordTimestampMixin, ProvenanceMixin):
             name="ck_complaints_currency_format_when_present",
         ),
         Index("ix_complaints_reported_category", "reported_at", "category"),
-        Index("ix_complaints_transaction_reference", "transaction_reference"),
         Index("ix_complaints_victim_reported", "victim_account_id", "reported_at"),
         Index("ix_complaints_suspected_reported", "suspected_account_id", "reported_at"),
     )
@@ -3044,7 +3043,6 @@ class GroundTruthLabel(Base, RecordTimestampMixin):
     )
 
     __table_args__ = (
-        Index("ix_ground_truth_labels_scenario_type", "scenario_type"),
         Index("ix_ground_truth_labels_ring", "ring_id"),
         CheckConstraint(
             "length(label_source) > 0",
