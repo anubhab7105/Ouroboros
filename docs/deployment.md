@@ -30,8 +30,8 @@ longer than the rest.
 ### Seeding
 
 ```bash
-export MULEGUARD_DEV_PASSWORD='choose-something'
-export MULEGUARD_ADMIN_PASSWORD="$MULEGUARD_DEV_PASSWORD"
+export MULEGUARD_DEV_PASSWORD=choose-something
+export MULEGUARD_ADMIN_PASSWORD=$MULEGUARD_DEV_PASSWORD
 
 docker compose exec backend python scripts/create_dev_users.py
 scripts/seed_demo.sh

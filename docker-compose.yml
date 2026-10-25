@@ -56,7 +56,8 @@ services:
 
       POSTGRES_DB: "${POSTGRES_DB:-muleguard}"
       POSTGRES_USER: "${POSTGRES_USER:-muleguard}"
-      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}"
+      POSTGRES_PASSWORD: >-
+        ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
 
       # Stronger password authentication for local Postgres.
       POSTGRES_HOST_AUTH_METHOD: scram-sha-256

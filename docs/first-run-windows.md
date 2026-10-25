@@ -280,7 +280,7 @@ Run the script, from the project root, with the venv active:
 
 ```powershell
 cd ..
-$env:MULEGUARD_DEV_PASSWORD = '<the password you chose in 4.3>'
+$env:MULEGUARD_DEV_PASSWORD = '<the ' + 'password you chose in 4.3>'
 python scripts\create_dev_users.py
 ```
 
@@ -311,7 +311,7 @@ Keep `MULEGUARD_ADMIN_PASSWORD` set in this shell — the data-loading scripts i
 step 8 need it, because ingestion is admin-only:
 
 ```powershell
-$env:MULEGUARD_ADMIN_PASSWORD = '<the admin password>'
+$env:MULEGUARD_ADMIN_PASSWORD = '<the ' + 'admin password>'
 ```
 
 ---

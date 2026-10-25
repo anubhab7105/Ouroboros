@@ -460,7 +460,8 @@ jobs:
               if not path.is_file():
                   continue
 
-              if any(part in excluded_dirs for part in path.parts):
+rel = path.as_posix()
+              if any(rel == d or rel.startswith(d + "/") for d in excluded_dirs):
                   continue
 
               if path.name in excluded_files:

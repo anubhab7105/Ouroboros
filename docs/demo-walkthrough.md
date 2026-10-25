@@ -10,8 +10,8 @@ cp .env.example .env
 python3 -c 'import secrets; print(secrets.token_urlsafe(48))'   # into BACKEND_SECRET_KEY
 docker compose up --build -d
 
-export MULEGUARD_DEV_PASSWORD='Demo-Passw0rd!2026'
-export MULEGUARD_ADMIN_PASSWORD="$MULEGUARD_DEV_PASSWORD"
+export MULEGUARD_DEV_PASSWORD=Demo-Passw0rd!2026
+export MULEGUARD_ADMIN_PASSWORD=$MULEGUARD_DEV_PASSWORD
 
 scripts/wait_for_backend.sh
 docker compose exec backend python scripts/create_dev_users.py

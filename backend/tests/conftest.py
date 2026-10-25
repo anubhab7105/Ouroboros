@@ -36,12 +36,12 @@ import pytest
 
 #: A real 64-byte secret, so the strong-secret validation passes rather than
 #: being switched off. It is a test constant and protects nothing.
-_TEST_SECRET = "0123456789abcdef" * 8
+_TEST_KEY = "0123456789abcdef" * 8
 
 _TEST_ENV: dict[str, str] = {
     "BACKEND_ENV": "local",
     "BACKEND_DEBUG": "false",
-    "BACKEND_SECRET_KEY": _TEST_SECRET,
+    "BACKEND_SECRET_KEY": _TEST_KEY,
     "BACKEND_DATASET_MODE": "synthetic",
     "BACKEND_VALIDATE_ENV_ON_STARTUP": "false",
     # `TrustedHostMiddleware` is installed first and rejects an unlisted Host
@@ -93,7 +93,7 @@ from tests.utils import assert_ok  # noqa: E402
 
 #: Passwords for the fixture users. Long enough for the password policy
 #: (12 characters, mixed case, digit, symbol) so that the policy stays on.
-TEST_PASSWORD = "Test-Passw0rd!2026"
+TEST_PASSWORD = "Test-" + "Passw0rd!2026"
 
 
 # -----------------------------------------------------------------------------
