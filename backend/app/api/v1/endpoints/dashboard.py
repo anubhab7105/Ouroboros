@@ -57,7 +57,7 @@ from typing import Annotated, Any, Final, Optional
 
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy import and_, desc, func, select
+from sqlalchemy import JSON, and_, desc, func, select
 from sqlalchemy.orm import Session
 
 from app.api.deps import (
@@ -1331,7 +1331,9 @@ def _build_overview(
         explanation_available=_count(
             db,
             ModelAssessment,
-            assessment_window_conditions + _not_null_condition(assessment_explanation_col),
+            assessment_window_conditions
+            + _not_null_condition(assessment_explanation_col)
+            + [assessment_explanation_col != JSON.NULL],
         ),
     )
 
