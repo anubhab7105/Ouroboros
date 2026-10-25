@@ -429,7 +429,12 @@ def test_evidence_cannot_be_added_to_a_closed_case(analyst_client, make, db, use
     facts than the case now shows — the report and the case would disagree.
     Reopening is the way to add more.
     """
-    case = make.case(status=CaseStatus.CLOSED, creator=users["analyst"])
+    account = make.account()
+    case = make.case(
+        account=account,
+        status=CaseStatus.CLOSED,
+        creator=users["analyst"],
+    )
     db.commit()
 
     response = _attach(analyst_client, case.id)
