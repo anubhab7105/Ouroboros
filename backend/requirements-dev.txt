@@ -116,7 +116,7 @@ pyfakefs>=5.6,<6.0
 #   - graph path constraints;
 #   - case state transitions;
 #   - risk score normalization.
-hypothesis>=6.108,<7.0
+hypothesis>=6.170.5,<7.0
 
 
 # =============================================================================
