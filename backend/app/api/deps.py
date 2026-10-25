@@ -1324,10 +1324,11 @@ def search_dependency(
     """
 
     def dependency(
-        q: Annotated[
-            Optional[str],
-            Query(alias=alias, description="Free-text search query"),
-        ] = None,
+        q: Optional[str] = Query(
+            default=None,
+            alias=alias,
+            description="Free-text search query",
+        ),
         settings: SettingsDep = ...,
     ) -> SearchParams:
         effective_max = max_length
