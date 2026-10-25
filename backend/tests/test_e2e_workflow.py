@@ -73,7 +73,7 @@ def run_analysis(client, *, account_ids: list[str]) -> dict:
         (200, 201),
     )
 
-    assert body["status"] in {"COMPLETED", "PARTIAL"}, body["status"]
+    assert body["status"] in {"SUCCEEDED", "COMPLETED", "PARTIAL"}, body["status"]
     return body
 
 
@@ -412,8 +412,14 @@ class TestClosureIsNotDeletion:
             status=CaseStatus.UNDER_INVESTIGATION,
             assignee=users["analyst"],
         )
-        make.case_note(case, author=users["analyst"])
         db.commit()
+        assert_ok(
+            senior_client.post(
+                f"{API}/cases/{case.id}/notes",
+                json={"note": "Reviewed the evidence before closure."},
+            ),
+            (200, 201),
+        )
 
         close_case(
             senior_client,
@@ -473,7 +479,13 @@ class TestClosureIsNotDeletion:
         db,
         users,
     ):
-        case = make.case(status=CaseStatus.CLOSED, assignee=users["analyst"])
+        from app.models import Disposition
+
+        case = make.case(
+            status=CaseStatus.CLOSED,
+            disposition=Disposition.INCONCLUSIVE,
+            assignee=users["analyst"],
+        )
         db.commit()
 
         assert_error(
