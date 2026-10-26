@@ -200,7 +200,7 @@ jsonschema>=4.26.0,<5.0
 # -----------------------------------------------------------------------------
 # Used by report tests to verify that generated PDFs are non-empty, have a PDF
 # signature, and contain expected case identifiers/text where feasible.
-pypdf>=4.2,<5.0
+pypdf>=6.21.2,<7.0
 
 
 # =============================================================================
