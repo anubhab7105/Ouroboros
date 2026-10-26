@@ -7,15 +7,15 @@ evaluations.
 
 Implemented endpoints:
 
-- GET /api/v1/model-metrics/status
-- GET /api/v1/model-metrics/current
-- GET /api/v1/model-metrics/limitations
-- GET /api/v1/model-metrics/feature-schema
-- GET /api/v1/model-metrics/versions
-- GET /api/v1/model-metrics/versions/{version_id}
-- GET /api/v1/model-metrics/versions/{version_id}/evaluations
-- GET /api/v1/model-metrics/evaluations/{evaluation_id}
-- GET /api/v1/model-metrics/compare
+- GET /api/v1/model/status
+- GET /api/v1/model/current
+- GET /api/v1/model/limitations
+- GET /api/v1/model/feature-schema
+- GET /api/v1/model/versions
+- GET /api/v1/model/versions/{version_id}
+- GET /api/v1/model/versions/{version_id}/evaluations
+- GET /api/v1/model/evaluations/{evaluation_id}
+- GET /api/v1/model/compare
 
 Design goals:
 
@@ -62,7 +62,7 @@ from decimal import Decimal
 from enum import Enum
 from typing import Annotated, Any, Final, Optional
 
-from fastapi import APIRouter, Depends, Path, Query
+from fastapi import APIRouter, Depends, Path, Query, Request
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import and_, desc, func, or_, select
 from sqlalchemy.orm import Session
@@ -1060,12 +1060,12 @@ class ModelVersionResponse(BaseModel):
     Artifact file paths are intentionally not exposed.
     """
 
-    model_config = ConfigDict(from_attributes=False)
+    model_config = ConfigDict(from_attributes=False, populate_by_name=True)
 
     id: str
     version: str
     feature_schema_version: str
-    model_type: str
+    family: str = Field(alias="model_type")
     training_seed: Optional[int] = None
     training_started_at: Optional[datetime] = None
     training_finished_at: Optional[datetime] = None
@@ -1106,10 +1106,10 @@ class ModelEvaluationResponse(BaseModel):
     Safe model evaluation response.
     """
 
-    model_config = ConfigDict(from_attributes=False)
+    model_config = ConfigDict(from_attributes=False, populate_by_name=True)
 
     id: str
-    model_version_id: str
+    version_id: str = Field(alias="model_version_id")
     dataset_fingerprint: Optional[str] = None
     split_strategy: str
     sample_count: int = 0
@@ -1175,7 +1175,7 @@ class FeatureSchemaResponse(BaseModel):
     Safe feature-schema metadata response.
     """
 
-    model_config = ConfigDict(from_attributes=False)
+    model_config = ConfigDict(from_attributes=False, populate_by_name=True)
 
     available: bool
     feature_schema_version: str
@@ -1183,7 +1183,7 @@ class FeatureSchemaResponse(BaseModel):
     feature_windows: list[str] = Field(default_factory=list)
     forbidden_fields: list[str] = Field(default_factory=list)
     fallback_label: str
-    schema: Optional[Any] = None
+    feature_schema: Optional[Any] = Field(default=None, alias="schema")
     caveats: list[str] = Field(default_factory=list)
 
 
@@ -1364,7 +1364,7 @@ def _active_model_version_row(db: Session) -> Optional[Any]:
     ),
 )
 def model_metrics_status(
-    request: Any,
+    request: Request,
     settings: SettingsDep,
     _: User = Depends(require_permission(MODEL_READ_PERMISSION)),
 ) -> ModelMetricsStatusResponse:
@@ -1417,7 +1417,7 @@ def model_metrics_status(
     ),
 )
 def current_model(
-    request: Any,
+    request: Request,
     db: SessionDep,
     settings: SettingsDep,
     _: User = Depends(require_permission(MODEL_READ_PERMISSION)),
@@ -1495,7 +1495,7 @@ def current_model(
     ),
 )
 def model_limitations(
-    request: Any,
+    request: Request,
     settings: SettingsDep,
     _: User = Depends(require_permission(MODEL_READ_PERMISSION)),
 ) -> ModelLimitationsResponse:
@@ -1561,7 +1561,7 @@ def feature_schema(
             metadata.get("fallback_label")
             or _setting(settings, "ML_FALLBACK_MODE_LABEL", "heuristic_fallback")
         ),
-        schema=metadata.get("schema"),
+        feature_schema=metadata.get("schema"),
         caveats=list(_MODEL_METRICS_CAVEATS),
     )
 

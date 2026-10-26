@@ -751,7 +751,7 @@ class LatestAssessmentSummary(BaseModel):
     Safe summary of a persisted account assessment.
     """
 
-    model_config = ConfigDict(from_attributes=False)
+    model_config = ConfigDict(from_attributes=False, populate_by_name=True)
 
     id: str
     account_id: str
@@ -762,7 +762,7 @@ class LatestAssessmentSummary(BaseModel):
     score_type: str
     score_version: Optional[str] = None
     risk_band: str
-    model_version_id: Optional[str] = None
+    version_id: Optional[str] = Field(default=None, alias="model_version_id")
     feature_snapshot_id: Optional[str] = None
     analysis_run_id: Optional[str] = None
     dataset_fingerprint: Optional[str] = None
@@ -926,7 +926,7 @@ class AssessmentDetail(BaseModel):
     Full persisted assessment detail for analyst review.
     """
 
-    model_config = ConfigDict(from_attributes=False)
+    model_config = ConfigDict(from_attributes=False, populate_by_name=True)
 
     id: str
     account_id: str
@@ -937,7 +937,7 @@ class AssessmentDetail(BaseModel):
     score_type: str
     score_version: Optional[str] = None
     risk_band: str
-    model_version_id: Optional[str] = None
+    version_id: Optional[str] = Field(default=None, alias="model_version_id")
     feature_snapshot_id: Optional[str] = None
     analysis_run_id: Optional[str] = None
     dataset_fingerprint: Optional[str] = None
@@ -984,7 +984,7 @@ class AlertResponse(BaseModel):
     Safe investigative alert summary for an account.
     """
 
-    model_config = ConfigDict(from_attributes=False)
+    model_config = ConfigDict(from_attributes=False, populate_by_name=True)
 
     id: str
     account_id: str
@@ -996,7 +996,7 @@ class AlertResponse(BaseModel):
     score: Optional[Decimal] = None
     score_version: Optional[str] = None
     scoring_mode: str
-    model_version: Optional[str] = None
+    version_label: Optional[str] = Field(default=None, alias="model_version")
     rule_codes: list[str] = Field(default_factory=list)
     signal_summary_json: Optional[Any] = None
     first_seen_at: datetime
@@ -1344,7 +1344,7 @@ def _correlation_response(
         complaint_amount=complaint.amount,
         complaint_currency=str(complaint.currency) if complaint.currency else None,
         complaint_source=str(complaint.source) if complaint.source else None,
-        complaint_narrative_available=bool(complaint.narrative_raw),
+        complaint_narrative_available=bool(_str_or_none(complaint.narrative_raw)),
         account_id=str(correlation.account_id) if correlation.account_id else None,
         transaction_id=str(correlation.transaction_id) if correlation.transaction_id else None,
         entity_id=str(correlation.entity_id) if correlation.entity_id else None,

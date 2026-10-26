@@ -28,7 +28,13 @@ from __future__ import annotations
 
 import pytest
 
+from app.api.v1.endpoints.model_metrics import (
+    FeatureSchemaResponse,
+    ModelEvaluationResponse,
+    ModelVersionResponse as EndpointModelVersionResponse,
+)
 from app.models import ModelType, SplitStrategy
+from app.schemas.model_metrics import ModelVersionResponse as SharedModelVersionResponse
 
 from tests.utils import assert_error, assert_ok, assert_paginated, ids_of
 
@@ -36,6 +42,22 @@ pytestmark = [pytest.mark.ml, pytest.mark.api]
 
 
 MODEL = "/api/v1/model"
+
+
+def test_model_metrics_router_is_loaded_and_mounted(app):
+    from app.api.v1 import ENDPOINT_REGISTRY
+    from app.api.v1.endpoints import model_metrics
+
+    paths = {getattr(route, "path", "") for route in app.routes}
+    print(sorted(p for p in paths if "model" in p))
+
+    spec = ENDPOINT_REGISTRY["model"]
+    declared_paths = {route.path for route in model_metrics.router.routes}
+
+    assert spec.module == ".endpoints.model_metrics"
+    assert spec.prefix == "/model"
+    assert "/versions" in declared_paths
+    assert "/api/v1/model/versions" in paths
 
 
 # -----------------------------------------------------------------------------
@@ -178,6 +200,48 @@ def test_the_limitations_summary_says_what_the_labels_are(analyst_client):
 # -----------------------------------------------------------------------------
 
 
+def test_model_metrics_protected_fields_keep_their_json_aliases():
+    endpoint_version = EndpointModelVersionResponse(
+        id="version-id",
+        version="v1",
+        feature_schema_version="v1",
+        family="RANDOM_FOREST",
+        split_strategy="temporal",
+    )
+    evaluation = ModelEvaluationResponse(
+        id="evaluation-id",
+        version_id="version-id",
+        split_strategy="temporal",
+    )
+    shared_version = SharedModelVersionResponse(
+        id="version-id",
+        version="v1",
+        feature_schema_version="v1",
+        family="RANDOM_FOREST",
+    )
+
+    assert endpoint_version.family == "RANDOM_FOREST"
+    assert endpoint_version.model_dump(by_alias=True)["model_type"] == "RANDOM_FOREST"
+    assert evaluation.version_id == "version-id"
+    assert evaluation.model_dump(by_alias=True)["model_version_id"] == "version-id"
+    assert shared_version.family == "RANDOM_FOREST"
+    assert shared_version.model_dump(by_alias=True)["model_type"] == "RANDOM_FOREST"
+
+
+def test_feature_schema_python_attribute_preserves_json_alias():
+    response = FeatureSchemaResponse(
+        available=True,
+        feature_schema_version="v1",
+        fallback_label="heuristic_fallback",
+        feature_schema={"fields": ["amount"]},
+    )
+
+    assert response.feature_schema == {"fields": ["amount"]}
+    payload = response.model_dump(by_alias=True)
+    assert payload["schema"] == {"fields": ["amount"]}
+    assert "feature_schema" not in payload
+
+
 def test_the_feature_schema_is_published(analyst_client):
     """
     The field list, the windows, and the forbidden names.
@@ -190,6 +254,8 @@ def test_the_feature_schema_is_published(analyst_client):
 
     assert body["available"] is True
     assert body["feature_schema_version"]
+    assert "schema" in body
+    assert "feature_schema" not in body
     assert body["feature_fields"]
     assert body["feature_windows"]
     assert body["forbidden_fields"]

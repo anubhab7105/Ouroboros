@@ -70,7 +70,8 @@ def test_evidence_records_who_attached_it(analyst_client, make, db, users):
     it in the case. The username travels with the id so reading the case does
     not require a second lookup.
     """
-    case = make.case(creator=users["analyst"])
+    account = make.account()
+    case = make.case(account=account, creator=users["analyst"])
     db.commit()
 
     body = assert_ok(_attach(analyst_client, case.id), 201)
@@ -93,7 +94,8 @@ def test_every_declared_evidence_type_is_accepted(
     interface offers and the server rejects, which surfaces as a button that
     always errors.
     """
-    case = make.case(creator=users["analyst"])
+    account = make.account()
+    case = make.case(account=account, creator=users["analyst"])
     db.commit()
 
     assert_ok(
@@ -108,7 +110,8 @@ def test_every_declared_evidence_type_is_accepted(
 
 
 def test_an_unknown_evidence_type_is_rejected(analyst_client, make, db, users):
-    case = make.case(creator=users["analyst"])
+    account = make.account()
+    case = make.case(account=account, creator=users["analyst"])
     db.commit()
 
     assert_error(_attach(analyst_client, case.id, evidence_type="SCREENSHOT"), 422)
@@ -121,7 +124,8 @@ def test_evidence_requires_an_identifier(analyst_client, make, db, users):
     It would appear in the case as a row saying "a transaction" and nobody
     could find which one.
     """
-    case = make.case(creator=users["analyst"])
+    account = make.account()
+    case = make.case(account=account, creator=users["analyst"])
     db.commit()
 
     assert_error(
@@ -140,7 +144,8 @@ def test_an_external_url_is_not_accepted_as_evidence(analyst_client, make, db, u
     depends on someone else's server is not a record. If the content matters,
     it belongs in the snapshot.
     """
-    case = make.case(creator=users["analyst"])
+    account = make.account()
+    case = make.case(account=account, creator=users["analyst"])
     db.commit()
 
     for url in (
@@ -167,7 +172,7 @@ def test_a_snapshot_can_be_attached_alongside_the_reference(
     against anything.
     """
     account = make.account()
-    case = make.case(creator=users["analyst"])
+    case = make.case(account=account, creator=users["analyst"])
     db.commit()
 
     body = assert_ok(
@@ -424,7 +429,12 @@ def test_evidence_cannot_be_added_to_a_closed_case(analyst_client, make, db, use
     facts than the case now shows — the report and the case would disagree.
     Reopening is the way to add more.
     """
-    case = make.case(status=CaseStatus.CLOSED, creator=users["analyst"])
+    account = make.account()
+    case = make.case(
+        account=account,
+        status=CaseStatus.CLOSED,
+        creator=users["analyst"],
+    )
     db.commit()
 
     response = _attach(analyst_client, case.id)

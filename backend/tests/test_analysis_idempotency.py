@@ -139,7 +139,7 @@ def test_the_conflict_does_not_echo_the_key(analyst_client, make, db):
     second_set = make.accounts(2)
     db.commit()
 
-    key = "idem-" + "k" * 300
+    key = "idem-" + "k" * 100
 
     analyst_client.post(RUNS, json=_payload(first_set), headers={"Idempotency-Key": key})
     response = analyst_client.post(

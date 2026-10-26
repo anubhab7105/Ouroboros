@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import pytest
 
-from app.models import CaseStatus, Priority
+from app.models import CaseStatus, Disposition, Priority
 
 from tests.utils import assert_error, assert_ok, assert_paginated, ids_of
 
@@ -67,18 +67,30 @@ def test_a_new_case_records_its_creator(analyst_client, make, db, users):
     username is carried alongside the id so a reader does not need a second
     lookup to know who it was.
     """
+    account = make.account()
     db.commit()
 
-    body = assert_ok(analyst_client.post(CASES, json={"title": "Looks odd"}), 201)
+    body = assert_ok(
+        analyst_client.post(
+            CASES, json={"title": "Looks odd", "account_id": account.id}
+        ),
+        201,
+    )
 
     assert body["creator_id"] == users["analyst"].id
     assert body["creator_username"] == "analyst"
 
 
-def test_a_new_case_starts_unassigned_and_in_new(analyst_client, db):
+def test_a_new_case_starts_unassigned_and_in_new(analyst_client, make, db):
+    account = make.account()
     db.commit()
 
-    body = assert_ok(analyst_client.post(CASES, json={"title": "Needs triage"}), 201)
+    body = assert_ok(
+        analyst_client.post(
+            CASES, json={"title": "Needs triage", "account_id": account.id}
+        ),
+        201,
+    )
 
     assert body["status"] == "NEW"
     assert body["assignee_id"] is None
@@ -154,7 +166,7 @@ def test_list_cases(analyst_client, make, db, users):
 
 def test_filter_cases_by_status(analyst_client, make, db):
     open_case = make.case(status=CaseStatus.NEW)
-    make.case(status=CaseStatus.CLOSED)
+    make.case(status=CaseStatus.CLOSED, disposition=Disposition.INCONCLUSIVE)
     db.commit()
 
     body = assert_ok(analyst_client.get(CASES, params={"status": "NEW"}))
@@ -201,10 +213,16 @@ def test_filter_cases_by_disposition(analyst_client, make, db):
 def test_case_detail_includes_evidence_notes_and_events(analyst_client, make, db, users):
     case = make.case(creator=users["analyst"])
     make.case_evidence(case)
-    make.case_note(case, author=users["analyst"])
     make.case_event(case, actor=users["analyst"])
     db.commit()
 
+    assert_ok(
+        analyst_client.post(
+            f"{CASES}/{case.id}/notes",
+            json={"note": "Reviewed the inbound cluster; senders appear unrelated."},
+        ),
+        201,
+    )
     body = assert_ok(analyst_client.get(f"{CASES}/{case.id}"))
 
     assert body["case"]["id"] == case.id
@@ -323,13 +341,19 @@ def test_patch_with_an_empty_body_is_rejected(analyst_client, make, db, users):
 # -----------------------------------------------------------------------------
 
 
-def test_triage_moves_new_to_triaged(analyst_client, make, db, users):
+def test_triage_moves_new_to_triaged(senior_client, make, db, users):
     case = make.case(status=CaseStatus.NEW, creator=users["analyst"])
     db.commit()
 
-    body = assert_ok(analyst_client.post(f"{CASES}/{case.id}/start", json={}))
+    body = assert_ok(
+        senior_client.post(
+            f"{CASES}/{case.id}/assign",
+            json={"assignee_id": users["analyst"].id},
+        )
+    )
 
     assert body["previous_status"] == "NEW"
+    assert body["new_status"] == "TRIAGED"
     assert body["changed"] is True
     assert body["audited"] is True
 
@@ -528,7 +552,11 @@ def test_assign_reports_both_assignees(senior_client, make, db, users):
 
 
 def test_assigning_to_the_same_person_reports_no_change(senior_client, make, db, users):
-    case = make.case(assignee=users["analyst"], creator=users["senior"])
+    case = make.case(
+        status=CaseStatus.TRIAGED,
+        assignee=users["analyst"],
+        creator=users["senior"],
+    )
     db.commit()
 
     body = assert_ok(
@@ -597,8 +625,15 @@ def test_closing_a_case_keeps_its_evidence_and_notes(senior_client, make, db, us
     """
     case = make.case(status=CaseStatus.UNDER_INVESTIGATION, creator=users["senior"])
     make.case_evidence(case)
-    make.case_note(case, author=users["senior"])
     db.commit()
+
+    assert_ok(
+        senior_client.post(
+            f"{CASES}/{case.id}/notes",
+            json={"note": "Reviewed the evidence before closure."},
+        ),
+        201,
+    )
 
     assert_ok(
         senior_client.post(

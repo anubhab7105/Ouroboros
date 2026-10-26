@@ -117,12 +117,40 @@ PUBLIC_ENDPOINTS = [
 # -----------------------------------------------------------------------------
 
 
+def test_model_metrics_router_is_loaded_and_mounted(app):
+    """
+    Model metrics are an optional feature surface, but when enabled in CI the
+    module must load and its routes must be mounted instead of silently 404ing.
+    """
+    import importlib
+
+    module = importlib.import_module("app.api.v1.endpoints.model_metrics")
+    assert getattr(module, "router", None) is not None
+
+    paths = {getattr(route, "path", "") for route in app.routes}
+    if "/api/v1/model/versions" not in paths:
+        from app.api.v1.router import get_api_v1_inclusion_state
+
+        pytest.fail(
+            "Model metrics module imported but its routes were not mounted; "
+            f"API v1 inclusion state: {get_api_v1_inclusion_state()!r}"
+        )
+
+
 class TestPaginationContract:
     """One envelope, on every list endpoint."""
 
     @pytest.mark.parametrize("path", LIST_ENDPOINTS)
     def test_envelope_is_present_and_flat(self, analyst_client, path):
-        body = assert_paginated(assert_ok(analyst_client.get(path)))
+        response = analyst_client.get(path)
+        if path == f"{API}/model/versions" and response.status_code == 404:
+            from app.api.v1.router import get_api_v1_inclusion_state
+
+            pytest.fail(
+                "Model router is missing; API v1 inclusion state: "
+                f"{get_api_v1_inclusion_state()!r}"
+            )
+        body = assert_paginated(assert_ok(response))
 
         assert "meta" not in body, "pagination is flat, not nested under meta"
         assert isinstance(body["caveats"], list)
@@ -336,7 +364,7 @@ class TestRequestCorrelation:
         """
         supplied = "req-flow-0002"
 
-        response = analyst_client.raw.get(
+        response = analyst_client.get(
             f"{API}/accounts/ACC-missing",
             headers={"X-Request-ID": supplied},
         )
