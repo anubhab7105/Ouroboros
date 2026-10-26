@@ -223,7 +223,7 @@ deptry>=0.18,<0.21
 cyclonedx-bom>=4.0,<5.0
 
 # License inventory for dependency review.
-pip-licenses>=4.4,<5.0
+pip-licenses>=5.5.5,<6.0
 
 
 # =============================================================================
