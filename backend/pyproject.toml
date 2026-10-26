@@ -109,7 +109,7 @@ dependencies = [
 [project.optional-dependencies]
 ml-extras = [
   # Optional explainability. Core functionality must not require SHAP.
-  "shap>=0.45,<0.47",
+  "shap>=0.45,<0.52",
 ]
 
 dev = [
