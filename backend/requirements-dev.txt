@@ -106,7 +106,7 @@ httpx2>=2.0,<3.0
 # those guarantees.
 
 # Fast, reliable time travel for point-in-time feature and rule tests.
-time-machine>=2.15,<3.0
+time-machine>=3.5.1,<4.0
 
 # In-memory filesystem for path-traversal, report filename, and artifact
 # isolation tests.
