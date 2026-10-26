@@ -92,7 +92,7 @@ dependencies = [
   "python-dotenv>=1.0,<2.0",
 
   # Data processing / numerical features
-  "pandas>=2.2,<3.0",
+  "pandas>=2.2,<4.0",
   "numpy>=1.26,<2.0",
   "scipy>=1.11,<2.0",
 
