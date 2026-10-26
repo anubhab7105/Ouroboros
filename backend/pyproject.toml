@@ -103,7 +103,7 @@ dependencies = [
   "networkx>=3.2,<4.0",
 
   # PDF reporting
-  "reportlab>=4.1,<5.0",
+  "reportlab>=4.1,<6.0",
 ]
 
 [project.optional-dependencies]
