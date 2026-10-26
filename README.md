@@ -391,6 +391,12 @@ muleguard/
 
 ---
 
+## Cloud deployment (Vercel + Render + Supabase)
+
+For a hosted synthetic demo, see the step-by-step [Vercel, Render, and Supabase deployment guide](docs/deployment-vercel-render-supabase.md). It covers Vercel SPA rewrites, the Render FastAPI service, the Supabase PostgreSQL connection, environment variables, migrations, CORS, smoke tests, free-tier limitations, and the current first-admin provisioning blocker.
+
+This stack deploys the frontend, backend, and database as separate services. Utility scripts such as data generation, schema checks, migrations, and demo seeding are one-off commands, not separate web services. MULEGUARD remains a synthetic-data prototype and must not be used with real customer or banking data.
+
 ## 8. Prerequisites
 
 Before running MULEGUARD, install:
