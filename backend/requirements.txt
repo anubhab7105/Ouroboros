@@ -85,7 +85,7 @@ psycopg2-binary>=2.9.9,<3.0
 argon2-cffi>=23.1,<24.0
 
 # bcrypt is an accepted fallback hashing scheme when configured securely.
-bcrypt>=4.1,<5.0
+bcrypt>=4.1,<6.0
 
 # PyJWT issues and validates signed bearer tokens.
 # Default demo mode uses HS256. Rotate BACKEND_SECRET_KEY securely.
